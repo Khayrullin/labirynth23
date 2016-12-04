@@ -1,5 +1,7 @@
 package edu.lmu.cs.networking;
 
+import com.sun.xml.internal.bind.v2.TODO;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,6 +13,15 @@ public class Game {
 
 
     private int XPlayerPlace;
+
+    public int getXPlayerPlace() {
+        return XPlayerPlace;
+    }
+
+    public int getOPlayerPlace() {
+        return OPlayerPlace;
+    }
+
     private int OPlayerPlace;
     private final int PROCENT_OF_BLOCKS = 60;
 
@@ -77,8 +88,7 @@ public class Game {
             }
         }
 
-        board[XPlayerPlace] = "X";
-        board[OPlayerPlace] = "O";
+
 
         for (int i = 0; i < board.length; i++) {
             if (board[i] == null) {
@@ -101,7 +111,8 @@ public class Game {
         //Vizualizaciya sgenerirovannoy doski:
 
 //        int j = 0;
-//
+//     board[XPlayerPlace] = "X";
+//     board[OPlayerPlace] = "O";
 //        for (int k = 0; k < board.length; k++) {
 //            System.out.print(board[k] + ",      ");
 //            j = 1 + j;
@@ -122,12 +133,11 @@ public class Game {
         return true;
     }
 
-    public synchronized boolean legalMove(int location, Player player) {
-        if (player == currentPlayer && board[location] == null) {
-            board[location] = currentPlayer;
-            currentPlayer = currentPlayer.opponent;
-            currentPlayer.otherPlayerMoved(location);
-
+    public synchronized boolean canIMove(int location, Player player) {
+        if (player == currentPlayer && board[location] != Block.BRICK &&
+                board[location] != Block.IMMORTAL) {
+            currentPlayer.setLocation(location);
+            currentPlayer.opponent.otherPlayerMoved(location);
             return true;
         }
         return false;
@@ -147,13 +157,25 @@ public class Game {
         Socket socket;
         BufferedReader input;
         PrintWriter output;
+        int location;
+
+        public int getLocation() {
+            return location;
+        }
+
+        public void setLocation(int location) {
+            this.location = location;
+        }
+
+
 
         /**
          * Constructs a handler thread for a given socket and mark
          * initializes the stream fields, displays the first two
          * welcoming messages.
          */
-        public Player(Socket socket, char mark) {
+        public Player(Socket socket, char mark, int location) {
+            this.location = location;
             this.socket = socket;
             this.mark = mark;
             try {
@@ -186,6 +208,7 @@ public class Game {
         /**
          * The run method of this thread.
          */
+       //TODO change run method
         public void run() {
             try {
                 // The thread is only started after everyone connects.
@@ -201,7 +224,7 @@ public class Game {
                     String command = input.readLine();
                     if (command.startsWith("MOVE")) {
                         int location = Integer.parseInt(command.substring(5));
-                        if (legalMove(location, this)) {
+                        if (canIMove(location, this)) {
                             output.println("VALID_MOVE");
                             output.println(hasWinner() ? "VICTORY"
                                     : boardFilledUp() ? "TIE"
