@@ -19,9 +19,14 @@ public class Game {
      * owns it.
      */
     private Player[] board = {
-            null, null, null,
-            null, null, null,
-            null, null, null};
+            null, null, null,null, null,
+            null, null, null,null, null,
+            null, null, null,null, null,
+            null, null, null,null, null,
+            null, null, null,null, null,
+
+
+            };
 
     /**
      * The current player.

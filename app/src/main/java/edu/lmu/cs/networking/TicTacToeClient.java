@@ -43,7 +43,7 @@ public class TicTacToeClient {
     private ImageIcon icon;
     private ImageIcon opponentIcon;
 
-    private Square[] board = new Square[9];
+    private Square[] board = new Square[81];
     private Square currentSquare;
 
     private static int PORT = 8901;
