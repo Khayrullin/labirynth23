@@ -119,12 +119,38 @@ public class Game {
         return true;
     }
 
-    public synchronized boolean canIMove(int location, Player player) {
-        if (player == currentPlayer && board[location] != Block.BRICK &&
-                board[location] != Block.IMMORTAL) {
-            currentPlayer.setLocation(location);
-            currentPlayer.opponent.otherPlayerMoved(location);
-            return true;
+    /**
+     * Full validation of clients movement:
+     * bez govnokoda :)
+     */
+
+    public synchronized boolean canIMoveIfCanMove(int direction, Player player) {
+        int wantedIndex = -1;
+        int loc = player.getLocation();
+        switch (direction) {
+            case 1:
+                wantedIndex = loc - 1;
+                break;
+            case 2:
+                wantedIndex = loc - 5;
+                break;
+            case 3:
+                wantedIndex = loc + 1;
+                break;
+            case 4:
+                wantedIndex = loc + 5;
+                break;
+        }
+        if ((wantedIndex > board.length - 1 || wantedIndex < 0) || (direction == 1 && ((loc % 5) == 0))
+                || (direction == 3 && (((loc + 1) % 5) == 0))) {
+            return false;
+        } else {
+            if (player == currentPlayer && board[wantedIndex] != Block.BRICK &&
+                    board[wantedIndex] != Block.IMMORTAL) {
+                currentPlayer.setLocation(wantedIndex);
+                currentPlayer.opponent.otherPlayerAction(1,wantedIndex);
+                return true;
+            }
         }
         return false;
     }
@@ -184,8 +210,31 @@ public class Game {
         /**
          * Handles the otherPlayerMoved message.
          */
-        public void otherPlayerMoved(int location) {
-            output.println("OPPONENT_MOVED " + location);
+
+        public void otherPlayerAction(int field, int location) {
+            switch (field) {
+                case 1:
+                    output.println("OTHER_PLAYER_ACTION MOVED" + location);
+                case 2 :
+                    output.println("OTHER_PLAYER_ACTION BLACK_KVAD" + location);
+                case 3 :
+                    output.println("OTHER_PLAYER_ACTION EMPTY" + location);
+                case 4 :
+                    output.println("OTHER_PLAYER_ACTION GRANIT" + location);
+            }
+        }
+
+        public void currentPlayerAction(int field, int location) {
+            switch (field) {
+                case 1:
+                    output.println("MOVED_OR MOVED" + location);
+                case 2 :
+                    output.println("OTHER_PLAYER_ACTION BLACK_KVAD" + location);
+                case 3 :
+                    output.println("OTHER_PLAYER_ACTION EMPTY" + location);
+                case 4 :
+                    output.println("OTHER_PLAYER_ACTION GRANIT" + location);
+            }
         }
 
         /**
@@ -206,12 +255,11 @@ public class Game {
                 while (true) {
                     String command = input.readLine();
                     if (command.startsWith("MOVE")) {
-                        int location = Integer.parseInt(command.substring(5));
-                        if (canIMove(location, this)) {
-                            output.println("VALID_MOVE");
-
+                        int direction = Integer.parseInt(command.substring(5));
+                        if (canIMoveIfCanMove(direction, this)) {
+                            output.println("MOVED_OR BLACK_KVAD");
                         } else {
-                            output.println("MESSAGE ?");
+                            output.println("MOVED_OR BLACK_KVAD" + location);
                         }
                     } else if (command.startsWith("QUIT")) {
                         return;

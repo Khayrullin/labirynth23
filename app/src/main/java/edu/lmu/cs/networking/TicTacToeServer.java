@@ -20,8 +20,7 @@ import java.util.List;
  *  BOMBTHIS <n>               BOMBED_OR (empty / Granit / Vzorval Sopernika)
  *  QUIT                       MOVED_OR (shodil / cherny kvadrat)
  *
- *                             OTHER_PLAYER_MOVED <n> (result)
- *                             OTHER_PLAYER_BOMBED
+ *                             OTHER_PLAYER_ACTION <n> (shodil / cherny kvadrat/ empty / Granit /)
  *                             VICTORY
  *
  *                             LOSE
