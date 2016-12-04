@@ -1,6 +1,5 @@
 package edu.lmu.cs.networking;
 
-import com.sun.xml.internal.bind.v2.TODO;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -124,12 +123,8 @@ public class Game {
     }
 
 
-    public boolean boardFilledUp() {
-        for (int i = 0; i < board.length; i++) {
-            if (board[i] == null) {
-                return false;
-            }
-        }
+    public boolean bombThatShit(int location, Player player) {
+       //TODO create method and add "win" Checking
         return true;
     }
 
@@ -201,8 +196,6 @@ public class Game {
          */
         public void otherPlayerMoved(int location) {
             output.println("OPPONENT_MOVED " + location);
-            output.println(
-                    hasWinner() ? "DEFEAT" : boardFilledUp() ? "TIE" : "");
         }
 
         /**
@@ -226,9 +219,7 @@ public class Game {
                         int location = Integer.parseInt(command.substring(5));
                         if (canIMove(location, this)) {
                             output.println("VALID_MOVE");
-                            output.println(hasWinner() ? "VICTORY"
-                                    : boardFilledUp() ? "TIE"
-                                    : "");
+
                         } else {
                             output.println("MESSAGE ?");
                         }
