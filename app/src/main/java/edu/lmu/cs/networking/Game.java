@@ -35,15 +35,8 @@ public class Game {
 
 
     public boolean hasWinner() {
-        return
-                (board[0] != null && board[0] == board[1] && board[0] == board[2])
-                        || (board[3] != null && board[3] == board[4] && board[3] == board[5])
-                        || (board[6] != null && board[6] == board[7] && board[6] == board[8])
-                        || (board[0] != null && board[0] == board[3] && board[0] == board[6])
-                        || (board[1] != null && board[1] == board[4] && board[1] == board[7])
-                        || (board[2] != null && board[2] == board[5] && board[2] == board[8])
-                        || (board[0] != null && board[0] == board[4] && board[0] == board[8])
-                        || (board[2] != null && board[2] == board[4] && board[2] == board[6]);
+        return false;
+
     }
 
     public Game() {
@@ -51,7 +44,6 @@ public class Game {
     }
 
     /**
-     * TODO:
      * Zapolnyaem dosku igrokami i prepyatstviyami:
      * P.S sorry for govnokod :)
      */
@@ -86,7 +78,6 @@ public class Game {
                 b = b + 1;
             }
         }
-
 
 
         for (int i = 0; i < board.length; i++) {
@@ -124,7 +115,7 @@ public class Game {
 
 
     public boolean bombThatShit(int location, Player player) {
-       //TODO create method and add "win" Checking
+        //TODO create method and add "win" Checking
         return true;
     }
 
@@ -161,7 +152,6 @@ public class Game {
         public void setLocation(int location) {
             this.location = location;
         }
-
 
 
         /**
@@ -201,7 +191,7 @@ public class Game {
         /**
          * The run method of this thread.
          */
-       //TODO change run method
+        //TODO change run method
         public void run() {
             try {
                 // The thread is only started after everyone connects.

@@ -1,11 +1,7 @@
 package edu.lmu.cs.networking;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,11 +17,14 @@ import java.util.List;
  *  Client -> Server           Server -> Client
  *  ----------------           ----------------
  *  MOVE <n>  (0 <= n <= 8)    WELCOME <char>  (char in {X, O})
- *  QUIT                       VALID_MOVE
- *                             OTHER_PLAYER_MOVED <n>
+ *  BOMBTHIS <n>               BOMBED_OR (empty / Granit / Vzorval Sopernika)
+ *  QUIT                       MOVED_OR (shodil / cherny kvadrat)
+ *
+ *                             OTHER_PLAYER_MOVED <n> (result)
+ *                             OTHER_PLAYER_BOMBED
  *                             VICTORY
- *                             DEFEAT
- *                             TIE
+ *
+ *                             LOSE
  *                             MESSAGE <text>
  *
  * A second change is that it allows an unlimited number of pairs of
