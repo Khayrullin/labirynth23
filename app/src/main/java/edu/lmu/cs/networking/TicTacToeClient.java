@@ -38,18 +38,37 @@ import com.meo.SMSSender;
  */
 public class TicTacToeClient {
 
-    private JFrame frame = new JFrame("Tic Tac Toe");
+    private JFrame frame = new JFrame("Bombermans");
     private JLabel messageLabel = new JLabel("");
     private ImageIcon icon;
     private ImageIcon opponentIcon;
 
-    private Square[] board = new Square[81];
+    private Square[] board = new Square[162];
     private Square currentSquare;
 
     private static int PORT = 8901;
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
+
+    /**
+     * Runs the client as an application.
+     */
+    public static void main(String[] args) throws Exception {
+        while (true) {
+            //SMSSender.smsSend("Game started","79047640086");
+            String serverAddress = (args.length == 0) ? "localhost" : args[1];
+            TicTacToeClient client = new TicTacToeClient(serverAddress);
+            client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            client.frame.setSize(1440, 700);
+            client.frame.setVisible(true);
+            client.frame.setResizable(false);
+            client.play();
+            if (!client.wantsToPlayAgain()) {
+                break;
+            }
+        }
+    }
 
     /**
      * Constructs the client by connecting to a server, laying out the
@@ -69,8 +88,8 @@ public class TicTacToeClient {
 
         JPanel boardPanel = new JPanel();
         boardPanel.setBackground(Color.black);
-        boardPanel.setLayout(new GridLayout(9, 9, 1, 1));
-        for (int i = 0; i < board.length; i++) {
+        boardPanel.setLayout(new GridLayout(9, 18, 1, 1));
+        for (int i = 0; i < board.length/2; i++) {
             final int j = i;
             board[i] = new Square();
             board[i].addMouseListener(new MouseAdapter() {
@@ -156,7 +175,7 @@ public class TicTacToeClient {
         JLabel label = new JLabel((Icon)null);
 
         public Square() {
-            setBackground(Color.white);
+            setBackground(Color.darkGray);
             add(label);
         }
 
@@ -165,24 +184,8 @@ public class TicTacToeClient {
         }
     }
 
-    /**
-     * Runs the client as an application.
-     */
-    public static void main(String[] args) throws Exception {
-        while (true) {
-            //SMSSender.smsSend("Game started","79047640086");
-            String serverAddress = (args.length == 0) ? "localhost" : args[1];
-            TicTacToeClient client = new TicTacToeClient(serverAddress);
-            client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            client.frame.setSize(720, 700);
-            client.frame.setVisible(true);
-            client.frame.setResizable(false);
-            client.play();
-            if (!client.wantsToPlayAgain()) {
-                break;
-            }
-        }
-    }
+
+
 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected ImageIcon createImageIcon(String path,

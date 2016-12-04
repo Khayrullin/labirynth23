@@ -6,52 +6,113 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-/**
- * A two-player game.
- */
+
 public class Game {
 
-    /**
-     * A board has nine squares.  Each square is either unowned or
-     * it is owned by a player.  So we use a simple array of player
-     * references.  If null, the corresponding square is unowned,
-     * otherwise the array cell stores a reference to the player that
-     * owns it.
-     */
-    private Player[] board = {
-            null, null, null,null, null,
-            null, null, null,null, null,
-            null, null, null,null, null,
-            null, null, null,null, null,
-            null, null, null,null, null,
 
+    private int XPlayerPlace;
+    private int OPlayerPlace;
+    private final int PROCENT_OF_BLOCKS = 60;
 
-            };
-
-    /**
-     * The current player.
-     */
     Player currentPlayer;
+    private Object[] board = {
+            null, null, null, null, null,
+            null, null, null, null, null,
+            null, null, null, null, null,
+            null, null, null, null, null,
+            null, null, null, null, null,
+    };
 
-    /**
-     * Returns whether the current state of the board is such that one
-     * of the players is a winner.
-     */
+
     public boolean hasWinner() {
         return
                 (board[0] != null && board[0] == board[1] && board[0] == board[2])
-                        ||(board[3] != null && board[3] == board[4] && board[3] == board[5])
-                        ||(board[6] != null && board[6] == board[7] && board[6] == board[8])
-                        ||(board[0] != null && board[0] == board[3] && board[0] == board[6])
-                        ||(board[1] != null && board[1] == board[4] && board[1] == board[7])
-                        ||(board[2] != null && board[2] == board[5] && board[2] == board[8])
-                        ||(board[0] != null && board[0] == board[4] && board[0] == board[8])
-                        ||(board[2] != null && board[2] == board[4] && board[2] == board[6]);
+                        || (board[3] != null && board[3] == board[4] && board[3] == board[5])
+                        || (board[6] != null && board[6] == board[7] && board[6] == board[8])
+                        || (board[0] != null && board[0] == board[3] && board[0] == board[6])
+                        || (board[1] != null && board[1] == board[4] && board[1] == board[7])
+                        || (board[2] != null && board[2] == board[5] && board[2] == board[8])
+                        || (board[0] != null && board[0] == board[4] && board[0] == board[8])
+                        || (board[2] != null && board[2] == board[4] && board[2] == board[6]);
+    }
+
+    public Game() {
+        fillTheBoard();
     }
 
     /**
-     * Returns whether there are no more empty squares.
+     * TODO:
+     * Zapolnyaem dosku igrokami i prepyatstviyami:
+     * P.S sorry for govnokod :)
      */
+    private void fillTheBoard() {
+        XPlayerPlace = (int) (Math.random() * 25);
+        OPlayerPlace = (int) (Math.random() * 25);
+        while (XPlayerPlace == OPlayerPlace) {
+            OPlayerPlace = (int) (Math.random() * 25);
+        }
+
+        int a, b;
+        if (XPlayerPlace < OPlayerPlace) {
+            a = XPlayerPlace;
+            b = OPlayerPlace;
+        } else {
+            a = OPlayerPlace;
+            b = XPlayerPlace;
+        }
+
+        while (b - a >= 5) {
+            board[b] = "Path";
+            b = b - 5;
+        }
+        if (b > a) {
+            while (b - a > 0) {
+                board[b] = "Path";
+                b = b - 1;
+            }
+        } else {
+            while (a - b > 0) {
+                board[b] = "Path";
+                b = b + 1;
+            }
+        }
+
+        board[XPlayerPlace] = "X";
+        board[OPlayerPlace] = "O";
+
+        for (int i = 0; i < board.length; i++) {
+            if (board[i] == null) {
+                if (PROCENT_OF_BLOCKS > (int) (Math.random() * 100)) {
+                    if (1 == (int) (Math.random() * 4)) {
+                        board[i] = Block.IMMORTAL;
+                    } else {
+                        board[i] = Block.BRICK;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < board.length; i++) {
+            if (board[i] == "Path") {
+                board[i] = null;
+            }
+        }
+
+        //Vizualizaciya sgenerirovannoy doski:
+
+//        int j = 0;
+//
+//        for (int k = 0; k < board.length; k++) {
+//            System.out.print(board[k] + ",      ");
+//            j = 1 + j;
+//            if (j == 5) {
+//                System.out.println();
+//                j = 0;
+//            }
+//        }
+    }
+
+
     public boolean boardFilledUp() {
         for (int i = 0; i < board.length; i++) {
             if (board[i] == null) {
@@ -61,28 +122,12 @@ public class Game {
         return true;
     }
 
-    /**
-     * Called by the player threads when a player tries to make a
-     * move.  This method checks to see if the move is legal: that
-     * is, the player requesting the move must be the current player
-     * and the square in which she is trying to move must not already
-     * be occupied.  If the move is legal the game state is updated
-     * (the square is set and the next player becomes current) and
-     * the other player is notified of the move so it can update its
-     * client.
-     */
     public synchronized boolean legalMove(int location, Player player) {
         if (player == currentPlayer && board[location] == null) {
             board[location] = currentPlayer;
             currentPlayer = currentPlayer.opponent;
             currentPlayer.otherPlayerMoved(location);
-            /*
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            */
+
             return true;
         }
         return false;
@@ -171,18 +216,19 @@ public class Game {
             } catch (IOException e) {
                 System.out.println("Player died: " + e);
             } finally {
-                try {socket.close();} catch (IOException e) {}
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                }
             }
         }
     }
 
     @Override
-    public String toString()
-    {
-        if (currentPlayer!=null) {
+    public String toString() {
+        if (currentPlayer != null) {
             return currentPlayer.mark + " has won";
-        }
-        else {
+        } else {
             return "game in progress";
         }
 

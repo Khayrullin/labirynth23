@@ -40,16 +40,22 @@ public class TicTacToeServer {
      */
     public static void main(String[] args) throws Exception {
         ServerSocket listener = new ServerSocket(8901);
-        System.out.println("Tic Tac Toe Server is Running");
+        System.out.println("Bomber Server is Running");
         try {
             while (true) {
                 Game game = new Game();
                 gamesArchive.add(game);
+                System.out.println("1");
                 Game.Player playerX = game.new Player(listener.accept(), 'X');
+                System.out.println("2");
                 Game.Player playerO = game.new Player(listener.accept(), 'O');
+                System.out.println("3");
                 playerX.setOpponent(playerO);
+                System.out.println("4");
                 playerO.setOpponent(playerX);
+                System.out.println("5");
                 game.currentPlayer = playerX;
+
                 playerX.start();
                 playerO.start();
             }
