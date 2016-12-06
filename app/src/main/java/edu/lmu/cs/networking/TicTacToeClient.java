@@ -215,6 +215,7 @@ public class TicTacToeClient implements ActionListener {
 //    TODO: В методе play надо добавить строчку "addKeyListener(new MovePlayer());", в общем - надо доделать, скоро этим займусь
 // http://zetcode.com/tutorials/javagamestutorial/pacman/
 //    Посмотри, мб тоже что-нибудь интересное найдешь
+// - Ok
 
     class MovePlayer extends KeyAdapter {
         @Override
