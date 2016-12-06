@@ -2,8 +2,7 @@ package edu.lmu.cs.networking;
 
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -36,7 +35,7 @@ import com.meo.SMSSender;
  *                             MESSAGE <text>
  *
  */
-public class TicTacToeClient {
+public class TicTacToeClient implements ActionListener {
 
     private JFrame frame = new JFrame("Bombermans");
     private JLabel messageLabel = new JLabel("");
@@ -50,6 +49,9 @@ public class TicTacToeClient {
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
+
+    private boolean ingame = false; //индикатор - есть ли игра, можно убрать, но с ним надежнее
+
 
     /**
      * Runs the client as an application.
@@ -76,6 +78,8 @@ public class TicTacToeClient {
      */
     public TicTacToeClient(String serverAddress) throws Exception {
 
+        ingame = true;
+
         // Setup networking
         socket = new Socket(serverAddress, PORT);
         in = new BufferedReader(new InputStreamReader(
@@ -89,13 +93,15 @@ public class TicTacToeClient {
         JPanel boardPanel = new JPanel();
         boardPanel.setBackground(Color.black);
         boardPanel.setLayout(new GridLayout(9, 18, 1, 1));
-        for (int i = 0; i < board.length/2; i++) {
+        for (int i = 0; i < board.length / 2; i++) {
             final int j = i;
             board[i] = new Square();
             board[i].addMouseListener(new MouseAdapter() {
                 public void mousePressed(MouseEvent e) {
                     currentSquare = board[j];
-                    out.println("MOVE " + j);}});
+                    out.println("MOVE " + j);
+                }
+            });
             boardPanel.add(board[i]);
         }
         frame.getContentPane().add(boardPanel, "Center");
@@ -120,9 +126,9 @@ public class TicTacToeClient {
             response = in.readLine();
             if (response.startsWith("WELCOME")) {
                 char mark = response.charAt(8);
-                icon = mark == 'X' ? createImageIcon("dot.png","X image"): createImageIcon("apple.png","O image");
-                        //new ImageIcon(mark == 'X' ? "x.gif" : "o.gif");
-                opponentIcon  = mark == 'X' ? createImageIcon("apple.png","X image"): createImageIcon("dot.png","O image");
+                icon = mark == 'X' ? createImageIcon("dot.png", "X image") : createImageIcon("apple.png", "O image");
+                //new ImageIcon(mark == 'X' ? "x.gif" : "o.gif");
+                opponentIcon = mark == 'X' ? createImageIcon("apple.png", "X image") : createImageIcon("dot.png", "O image");
                 //new ImageIcon(mark == 'X' ? "o.gif" : "x.gif");
                 frame.setTitle("Tic Tac Toe - Player " + mark);
             }
@@ -151,8 +157,7 @@ public class TicTacToeClient {
                 }
             }
             out.println("QUIT");
-        }
-        finally {
+        } finally {
             socket.close();
         }
     }
@@ -166,13 +171,15 @@ public class TicTacToeClient {
         return response == JOptionPane.YES_OPTION;
     }
 
+
     /**
      * Graphical square in the client window.  Each square is
      * a white panel containing.  A client calls setIcon() to fill
      * it with an Icon, presumably an X or O.
      */
     static class Square extends JPanel {
-        JLabel label = new JLabel((Icon)null);
+
+        JLabel label = new JLabel((Icon) null);
 
         public Square() {
             setBackground(Color.darkGray);
@@ -182,12 +189,12 @@ public class TicTacToeClient {
         public void setIcon(Icon icon) {
             label.setIcon(icon);
         }
+
     }
 
-
-
-
-    /** Returns an ImageIcon, or null if the path was invalid. */
+    /**
+     * Returns an ImageIcon, or null if the path was invalid.
+     */
     protected ImageIcon createImageIcon(String path,
                                         String description) {
 
@@ -202,4 +209,40 @@ public class TicTacToeClient {
             return null;
         }
     }
+
+
+//    Класс со считыванием стрелок, взял из примера с игрой с пакманом.
+//    TODO: В методе play надо добавить строчку "addKeyListener(new MovePlayer());", в общем - надо доделать, скоро этим займусь
+// http://zetcode.com/tutorials/javagamestutorial/pacman/
+//    Посмотри, мб тоже что-нибудь интересное найдешь
+
+    class MovePlayer extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e) {
+
+            int press = e.getKeyCode();
+            int answerPress;
+
+            if (ingame) {
+                if (press == KeyEvent.VK_LEFT) {
+                    answerPress = 1;
+                } else if (press == KeyEvent.VK_RIGHT) {
+                    answerPress = 3;
+                } else if (press == KeyEvent.VK_UP) {
+                    answerPress = 2;
+                } else if (press == KeyEvent.VK_DOWN) {
+                    answerPress = 4;
+                }
+
+
+            }
+        }
+    }
+
+        public void actionPerformed(ActionEvent e) {
+            frame.repaint();
+        }
+
+
+
 }
