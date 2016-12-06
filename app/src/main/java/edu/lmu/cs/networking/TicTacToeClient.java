@@ -212,7 +212,7 @@ public class TicTacToeClient implements ActionListener {
 
 
 //    Класс со считыванием стрелок, взял из примера с игрой с пакманом.
-//    TODO: В методе play надо добавить строчку "addKeyListener(new MovePlayer());", в общем - надо доделать, скоро этим займусь
+//    TODO: В методе ?play? надо добавить строчку "addKeyListener(new MovePlayer());", в общем - надо доделать, скоро этим займусь
 // http://zetcode.com/tutorials/javagamestutorial/pacman/
 //    Посмотри, мб тоже что-нибудь интересное найдешь
 // - Ok
@@ -222,21 +222,20 @@ public class TicTacToeClient implements ActionListener {
         public void keyPressed(KeyEvent e) {
 
             int press = e.getKeyCode();
-            int answerPress;
+            String answerPress = null;
 
             if (ingame) {
                 if (press == KeyEvent.VK_LEFT) {
-                    answerPress = 1;
+                    answerPress = "MOVE 1";
                 } else if (press == KeyEvent.VK_RIGHT) {
-                    answerPress = 3;
+                    answerPress = "MOVE 3";
                 } else if (press == KeyEvent.VK_UP) {
-                    answerPress = 2;
+                    answerPress = "MOVE 2";
                 } else if (press == KeyEvent.VK_DOWN) {
-                    answerPress = 4;
+                    answerPress = "MOVE 4";
                 }
-
-
             }
+
         }
     }
 
