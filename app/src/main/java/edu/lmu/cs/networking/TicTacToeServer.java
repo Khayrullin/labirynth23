@@ -16,14 +16,9 @@ import java.util.List;
  *
  *  Client -> Server           Server -> Client
  *  ----------------           ----------------
- *  MOVE <n>  (0 <= n <= 8)    WELCOME <char>  (char in {X, O})
- *  BOMBTHIS <n>               BOMBED_OR (empty / Granit / Vzorval Sopernika)
- *  QUIT                       MOVED_OR (shodil / cherny kvadrat)
- *
- *                             OTHER_PLAYER_ACTION <n> (shodil / cherny kvadrat/ empty / Granit /)
- *                             VICTORY
- *
- *                             LOSE
+ *  MOVE <n>  (1 <= n <= 4)    WELCOME <char>  (char in {X, O})
+ *  BOMB <n> (1 <= n <= 4)     CURRENT (empty / Granit /shodil / cherny kvadrat/ won/ lose)
+ *  QUIT                       OTHER (empty / Granit /shodil / cherny kvadrat/ won/ lose)
  *                             MESSAGE <text>
  *
  * A second change is that it allows an unlimited number of pairs of

@@ -113,18 +113,39 @@ public class Game {
 //        }
     }
 
-
-    public boolean bombThatShit(int location, Player player) {
-        //TODO create method and add "win" Checking
-        return true;
-    }
-
     /**
-     * Full validation of clients movement:
-     * bez govnokoda :)
+     * Tut vse prosto:
+     *
      */
+    public boolean hasWinner(int direction, Player player) {
+        int wantedIndex = getWantedIndex(direction, player);
+        return wantedIndex == player.opponent.getLocation();
+    }
+    /**
+     * delaet vzryv esli mojno:
+     *
+     */
+    public boolean bombThatShit(int direction, Player player) {
+        int wantedIndex = getWantedIndex(direction, player);
+        int loc = player.getLocation();
 
-    public synchronized boolean canIMoveIfCanMove(int direction, Player player) {
+        if ((wantedIndex > board.length - 1 || wantedIndex < 0) || (direction == 1 && ((loc % 5) == 0))
+                || (direction == 3 && (((loc + 1) % 5) == 0))) {
+            return false;
+        } else {
+            if (player == currentPlayer &&
+                    board[wantedIndex] != Block.IMMORTAL && wantedIndex != player.opponent.getLocation()) {
+                board[wantedIndex] = null;
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * vozvrashaem index po nomeru klienta ot 1 do 4
+     *
+     */
+    public int getWantedIndex(int direction, Player player) {
         int wantedIndex = -1;
         int loc = player.getLocation();
         switch (direction) {
@@ -141,14 +162,25 @@ public class Game {
                 wantedIndex = loc + 5;
                 break;
         }
+        return wantedIndex;
+    }
+    /**
+     * delaet hod esli mojno:
+     *
+     */
+    public synchronized boolean canIMoveIfCan_Move(int direction, Player player) {
+        int wantedIndex = getWantedIndex(direction, player);
+        int loc = player.getLocation();
+
         if ((wantedIndex > board.length - 1 || wantedIndex < 0) || (direction == 1 && ((loc % 5) == 0))
                 || (direction == 3 && (((loc + 1) % 5) == 0))) {
+
             return false;
         } else {
             if (player == currentPlayer && board[wantedIndex] != Block.BRICK &&
                     board[wantedIndex] != Block.IMMORTAL) {
                 currentPlayer.setLocation(wantedIndex);
-                currentPlayer.opponent.otherPlayerAction(1,wantedIndex);
+
                 return true;
             }
         }
@@ -208,39 +240,50 @@ public class Game {
         }
 
         /**
-         * Handles the otherPlayerMoved message.
+         * PEredacha deystviy klientu
          */
 
         public void otherPlayerAction(int field, int location) {
             switch (field) {
                 case 1:
-                    output.println("OTHER_PLAYER_ACTION MOVED" + location);
-                case 2 :
-                    output.println("OTHER_PLAYER_ACTION BLACK_KVAD" + location);
-                case 3 :
-                    output.println("OTHER_PLAYER_ACTION EMPTY" + location);
-                case 4 :
-                    output.println("OTHER_PLAYER_ACTION GRANIT" + location);
+                    output.println("OTHER MOVED" + location);
+                case 2:
+                    output.println("OTHER BLACK_KVAD" + location);
+                case 3:
+                    output.println("OTHER EMPTY" + location);
+                case 4:
+                    output.println("OTHER GRANIT" + location);
+                case 5:
+                    output.println("OTHER WON" + location);
+                case 6:
+                    output.println("OTHER LOSE" + location);
+
             }
         }
-
+        /**
+         * peredacha deystviy klientu
+         *
+         */
         public void currentPlayerAction(int field, int location) {
             switch (field) {
                 case 1:
-                    output.println("MOVED_OR MOVED" + location);
-                case 2 :
-                    output.println("OTHER_PLAYER_ACTION BLACK_KVAD" + location);
-                case 3 :
-                    output.println("OTHER_PLAYER_ACTION EMPTY" + location);
-                case 4 :
-                    output.println("OTHER_PLAYER_ACTION GRANIT" + location);
+                    output.println("CURRENT MOVED" + location);
+                case 2:
+                    output.println("CURRENT BLACK_KVAD" + location);
+                case 3:
+                    output.println("CURRENT EMPTY" + location);
+                case 4:
+                    output.println("CURRENT GRANIT" + location);
+                case 5:
+                    output.println("CURRENT WON" + location);
+                case 6:
+                    output.println("CURRENT LOSE" + location);
             }
         }
 
         /**
          * The run method of this thread.
          */
-        //TODO change run method
         public void run() {
             try {
                 // The thread is only started after everyone connects.
@@ -256,14 +299,31 @@ public class Game {
                     String command = input.readLine();
                     if (command.startsWith("MOVE")) {
                         int direction = Integer.parseInt(command.substring(5));
-                        if (canIMoveIfCanMove(direction, this)) {
-                            output.println("MOVED_OR BLACK_KVAD");
+                        if (canIMoveIfCan_Move(direction, this)) {
+                            currentPlayerAction(1, this.getLocation());
+                            currentPlayer.opponent.otherPlayerAction(1, this.getLocation());
                         } else {
-                            output.println("MOVED_OR BLACK_KVAD" + location);
+                            currentPlayerAction(2, this.getLocation());
+                            currentPlayer.opponent.otherPlayerAction(2, this.getLocation());
+                        }
+                    } else if (command.startsWith("BOMB")) {
+                        int direction = Integer.parseInt(command.substring(5));
+                        if (!hasWinner()) {
+                            if (bombThatShit(direction, this)) {
+                                currentPlayerAction(3, this.getLocation());
+                                currentPlayer.opponent.otherPlayerAction(3, this.getLocation());
+                            } else {
+                                currentPlayerAction(4, this.getLocation());
+                                currentPlayer.opponent.otherPlayerAction(4, this.getLocation());
+                            }
+                        } else {
+                            currentPlayerAction(5, this.getLocation());
+                            currentPlayer.opponent.otherPlayerAction(6, this.getLocation());
                         }
                     } else if (command.startsWith("QUIT")) {
                         return;
                     }
+
                 }
             } catch (IOException e) {
                 System.out.println("Player died: " + e);
