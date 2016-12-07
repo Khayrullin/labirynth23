@@ -226,13 +226,13 @@ public class TicTacToeClient implements ActionListener {
 
             if (ingame) {
                 if (press == KeyEvent.VK_LEFT) {
-                    answerPress = "MOVE 1";
+                    out.println("MOVE 1");
                 } else if (press == KeyEvent.VK_RIGHT) {
-                    answerPress = "MOVE 3";
+                    out.println("MOVE 3");
                 } else if (press == KeyEvent.VK_UP) {
-                    answerPress = "MOVE 2";
+                    out.println("MOVE 2");
                 } else if (press == KeyEvent.VK_DOWN) {
-                    answerPress = "MOVE 4";
+                    out.println("MOVE 4");
                 }
             }
 
