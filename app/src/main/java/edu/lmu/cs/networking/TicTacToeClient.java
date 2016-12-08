@@ -93,7 +93,7 @@ public class TicTacToeClient implements ActionListener {
         JPanel boardPanel = new JPanel();
         boardPanel.setBackground(Color.black);
         boardPanel.setLayout(new GridLayout(9, 18, 1, 1));
-        for (int i = 0; i < board.length / 2; i++) {
+        for (int i = 0; i < board.length; i++) {
             final int j = i;
             board[i] = new Square();
             board[i].addMouseListener(new MouseAdapter() {

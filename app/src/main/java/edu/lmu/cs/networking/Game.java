@@ -34,8 +34,6 @@ public class Game {
     };
 
 
-
-
     public Game() {
         fillTheBoard();
     }
@@ -112,15 +110,14 @@ public class Game {
 
     /**
      * Tut vse prosto:
-     *
      */
     public boolean hasWinner(int direction, Player player) {
         int wantedIndex = getWantedIndex(direction, player);
         return wantedIndex == player.opponent.getLocation();
     }
+
     /**
      * delaet vzryv esli mojno:
-     *
      */
     public boolean bombThatShit(int direction, Player player) {
         int wantedIndex = getWantedIndex(direction, player);
@@ -138,9 +135,9 @@ public class Game {
         }
         return false;
     }
+
     /**
      * vozvrashaem index po nomeru klienta ot 1 do 4
-     *
      */
     public int getWantedIndex(int direction, Player player) {
         int wantedIndex = -1;
@@ -161,9 +158,9 @@ public class Game {
         }
         return wantedIndex;
     }
+
     /**
      * delaet hod esli mojno:
-     *
      */
     public synchronized boolean canIMoveIfCan_Move(int direction, Player player) {
         int wantedIndex = getWantedIndex(direction, player);
@@ -257,9 +254,9 @@ public class Game {
 
             }
         }
+
         /**
          * peredacha deystviy klientu
-         *
          */
         public void currentPlayerAction(int field, int location) {
             switch (field) {
@@ -294,32 +291,40 @@ public class Game {
                 // Repeatedly get commands from the client and process them.
                 while (true) {
                     String command = input.readLine();
-                    if (command.startsWith("MOVE")) {
-                        int direction = Integer.parseInt(command.substring(5));
-                        if (canIMoveIfCan_Move(direction, this)) {
-                            currentPlayerAction(1, this.getLocation());
-                            currentPlayer.opponent.otherPlayerAction(1, this.getLocation());
-                        } else {
-                            currentPlayerAction(2, this.getLocation());
-                            currentPlayer.opponent.otherPlayerAction(2, this.getLocation());
-                        }
-                    } else if (command.startsWith("BOMB")) {
-                        int direction = Integer.parseInt(command.substring(5));
-                        if (!hasWinner(getWantedIndex(direction,currentPlayer),currentPlayer)) {
-                            if (bombThatShit(direction, this)) {
-                                currentPlayerAction(3, this.getLocation());
-                                currentPlayer.opponent.otherPlayerAction(3, this.getLocation());
+                    if (this == currentPlayer) {
+                        if (command.startsWith("MOVE")) {
+                            int direction = Integer.parseInt(command.substring(5));
+
+                            if (canIMoveIfCan_Move(direction, this)) {
+                                currentPlayerAction(1, this.getLocation());
+                                currentPlayer.opponent.otherPlayerAction(1, this.getLocation());
                             } else {
-                                currentPlayerAction(4, this.getLocation());
-                                currentPlayer.opponent.otherPlayerAction(4, this.getLocation());
+                                currentPlayerAction(2, this.getLocation());
+                                currentPlayer.opponent.otherPlayerAction(2, this.getLocation());
                             }
-                        } else {
-                            currentPlayerAction(5, this.getLocation());
-                            currentPlayer.opponent.otherPlayerAction(6, this.getLocation());
+                        } else if (command.startsWith("BOMB")) {
+                            int direction = Integer.parseInt(command.substring(5));
+                            if (!hasWinner(getWantedIndex(direction, currentPlayer), currentPlayer)) {
+                                if (bombThatShit(direction, this)) {
+                                    currentPlayerAction(3, this.getLocation());
+                                    currentPlayer.opponent.otherPlayerAction(3, this.getLocation());
+                                    currentPlayer = currentPlayer.opponent;
+
+                                } else {
+                                    currentPlayerAction(4, this.getLocation());
+                                    currentPlayer.opponent.otherPlayerAction(4, this.getLocation());
+                                    currentPlayer = currentPlayer.opponent;
+                                }
+                            } else {
+                                currentPlayerAction(5, this.getLocation());
+                                currentPlayer.opponent.otherPlayerAction(6, this.getLocation());
+                            }
+                        }  else if (command.startsWith("PROP")) {
+                            currentPlayer = currentPlayer.opponent;
+                        }else if (command.startsWith("QUIT")) {
+                            return;
                         }
-                    } else if (command.startsWith("QUIT")) {
-                        return;
-                    }
+                    } else output.println("MESSAGE ?");
 
                 }
             } catch (IOException e) {
