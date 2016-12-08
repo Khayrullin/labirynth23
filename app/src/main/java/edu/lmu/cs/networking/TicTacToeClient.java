@@ -17,6 +17,8 @@ import javax.swing.JPanel;
 
 import com.meo.SMSSender;
 
+import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
+
 /**
  * A client for the TicTacToe game, modified and extended from the
  * class presented in Deitel and Deitel "Java How to Program" book.
@@ -135,10 +137,12 @@ public class TicTacToeClient implements ActionListener {
             while (true) {
                 response = in.readLine();
                 if (response.startsWith("VALID_MOVE")) {
+                    addKeyListener(new MovePlayer());
                     messageLabel.setText("Valid move, please wait");
                     currentSquare.setIcon(icon);
                     currentSquare.repaint();
                 } else if (response.startsWith("OPPONENT_MOVED")) {
+                    addKeyListener(new MovePlayer());
                     int loc = Integer.parseInt(response.substring(15));
                     board[loc].setIcon(opponentIcon);
                     board[loc].repaint();
@@ -226,13 +230,13 @@ public class TicTacToeClient implements ActionListener {
 
             if (ingame) {
                 if (press == KeyEvent.VK_LEFT) {
-                    answerPress = "MOVE 1";
+                    out.println("MOVE 1");
                 } else if (press == KeyEvent.VK_RIGHT) {
-                    answerPress = "MOVE 3";
+                    out.println("MOVE 3");
                 } else if (press == KeyEvent.VK_UP) {
-                    answerPress = "MOVE 2";
+                    out.println("MOVE 2");
                 } else if (press == KeyEvent.VK_DOWN) {
-                    answerPress = "MOVE 4";
+                    out.println("MOVE 4");
                 }
             }
 
