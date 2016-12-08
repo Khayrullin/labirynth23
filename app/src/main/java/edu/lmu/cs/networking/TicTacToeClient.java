@@ -239,6 +239,8 @@ public class TicTacToeClient implements ActionListener {
                     out.println("MOVE 2");
                 } else if (press == KeyEvent.VK_DOWN) {
                     out.println("MOVE 4");
+                }else if (press == KeyEvent.VK_ENTER){
+                    out.println("PROP");
                 }
             }
 

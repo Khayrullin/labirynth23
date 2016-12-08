@@ -19,7 +19,7 @@ import java.util.List;
  *  MOVE <n>  (1 <= n <= 4)    WELCOME <char>  (char in {X, O})
  *  BOMB <n> (1 <= n <= 4)     CURRENT (empty / Granit /shodil / cherny kvadrat/ won/ lose)
  *  QUIT                       OTHER (empty / Granit /shodil / cherny kvadrat/ won/ lose)
- *                             MESSAGE <text>
+ *  PROP                       MESSAGE <text>
  *
  * A second change is that it allows an unlimited number of pairs of
  * players to play.
