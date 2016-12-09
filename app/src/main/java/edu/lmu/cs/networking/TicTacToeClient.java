@@ -1,7 +1,6 @@
 package edu.lmu.cs.networking;
 
-import java.awt.Color;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -52,7 +51,23 @@ public class TicTacToeClient implements ActionListener {
     private BufferedReader in;
     private PrintWriter out;
 
-    private boolean ingame = false; //индикатор - есть ли игра, можно убрать, но с ним надежнее
+    private int[] boardX99 = new int[81];//массив для поля 9х9, пусть одномерный, как и основной 5х5
+    private int wherePlayerX = 41;//в центре массива 9х9
+
+    private int[] boardO99 = new int[81];
+    private int wherePlayerO = 41;
+
+    private boolean upPress = false;
+    private boolean downPress = false;
+    private boolean rightPress = false;
+    private boolean leftPress = false;
+
+
+    private boolean ingame = false;
+
+    private ImageIcon red;
+    private ImageIcon green;
+    private ImageIcon blue;
 
 
     /**
@@ -89,26 +104,77 @@ public class TicTacToeClient implements ActionListener {
         out = new PrintWriter(socket.getOutputStream(), true);
 
         // Layout GUI
-        messageLabel.setBackground(Color.lightGray);
+        messageLabel.setBackground(Color.white);//хз что делает
         frame.getContentPane().add(messageLabel, "South");
 
         JPanel boardPanel = new JPanel();
-        boardPanel.setBackground(Color.black);
+        boardPanel.setBackground(Color.black);//границы
         boardPanel.setLayout(new GridLayout(9, 18, 1, 1));
 
-        addKeyListener(new MovePlayer());
-//        for (int i = 0; i < board.length / 2; i++) {
-//            final int j = i;
-//            board[i] = new Square();
-//            board[i].addMouseListener(new MouseAdapter() {
-//                public void mousePressed(MouseEvent e) {
-//                    currentSquare = board[j];
-//                    out.println("MOVE " + j);
-//                }
-//            });
-//            boardPanel.add(board[i]);
-//        }
+//        addKeyListener(new MovePlayer());
+//        TODO: вместо этой говнины определить какой игрок играет и перекинуть на нужный метод
+        for (int i = 0; i < board.length / 2; i++) {
+            final int j = i;
+            board[i] = new Square();
+            board[i].addKeyListener(new KeyAdapter() {
+                public void keyPressed(KeyEvent e) {
+                    currentSquare = board[j];
+                    out.println("MOVE " + j);
+                    System.out.println("keyPress");
+                }
+            });
+            boardPanel.add(board[i]);
+        }
+
         frame.getContentPane().add(boardPanel, "Center");
+    }
+//двигаем Х
+   protected void MovePlayerX(){
+       if (upPress){
+           wherePlayerX -=9;
+
+       }
+       if (downPress){
+            wherePlayerX +=9;
+       }
+       if (rightPress){
+           wherePlayerX += 1;
+
+       }
+       if (leftPress){
+           wherePlayerX -=1;
+       }
+
+   }
+// двигаем О
+   protected void MovePlayerO(){
+       if (upPress){
+           wherePlayerO -=9;
+       }
+       if (downPress){
+           wherePlayerO +=9;
+       }
+       if (rightPress){
+           wherePlayerO += 1;
+       }
+       if (leftPress){
+           wherePlayerO -=1;
+       }
+
+   }
+
+// Сразу закачаем значки, чтоб не ебаться, лол оказывается у евлампия тот же присер змейки, что я нашел в инете
+    private void loadImg() {
+
+        ImageIcon bl = createImageIcon("dot.png","Dot Image");
+        blue = bl;
+
+
+        ImageIcon gr = createImageIcon("head.png","Head Image");
+        green = gr;
+
+        ImageIcon rd = createImageIcon("apple.png","Apple Image");
+        red = rd;
     }
 
     /**
@@ -125,26 +191,27 @@ public class TicTacToeClient implements ActionListener {
      * will be sent a "QUIT" message also.
      */
     public void play() throws Exception {
+        loadImg();
         String response;
         try {
             response = in.readLine();
             if (response.startsWith("WELCOME")) {
                 char mark = response.charAt(8);
-                icon = mark == 'X' ? createImageIcon("dot.png", "X image") : createImageIcon("apple.png", "O image");
+                icon = mark == 'X' ? blue : green;
                 //new ImageIcon(mark == 'X' ? "x.gif" : "o.gif");
-                opponentIcon = mark == 'X' ? createImageIcon("apple.png", "X image") : createImageIcon("dot.png", "O image");
+                opponentIcon = mark == 'X' ? green : blue;
                 //new ImageIcon(mark == 'X' ? "o.gif" : "x.gif");
                 frame.setTitle("Tic Tac Toe - Player " + mark);
             }
             while (true) {
                 response = in.readLine();
                 if (response.startsWith("VALID_MOVE")) {
-                    addKeyListener(new MovePlayer());
+//                    addKeyListener(new MovePlayer());
                     messageLabel.setText("Valid move, please wait");
                     currentSquare.setIcon(icon);
                     currentSquare.repaint();
                 } else if (response.startsWith("OPPONENT_MOVED")) {
-                    addKeyListener(new MovePlayer());
+//                    addKeyListener(new MovePlayer());
                     int loc = Integer.parseInt(response.substring(15));
                     board[loc].setIcon(opponentIcon);
                     board[loc].repaint();
@@ -188,7 +255,7 @@ public class TicTacToeClient implements ActionListener {
         JLabel label = new JLabel((Icon) null);
 
         public Square() {
-            setBackground(Color.darkGray);
+            setBackground(Color.gray);// фон всего
             add(label);
         }
 
@@ -228,11 +295,11 @@ public class TicTacToeClient implements ActionListener {
         public void keyPressed(KeyEvent e) {
 
             int press = e.getKeyCode();
-            String answerPress = null;
 
             if (ingame) {
                 if (press == KeyEvent.VK_LEFT) {
                     out.println("MOVE 1");
+
                 } else if (press == KeyEvent.VK_RIGHT) {
                     out.println("MOVE 3");
                 } else if (press == KeyEvent.VK_UP) {
