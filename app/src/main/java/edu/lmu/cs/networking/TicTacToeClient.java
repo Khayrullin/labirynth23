@@ -65,7 +65,8 @@ public class TicTacToeClient implements ActionListener {
 
     private boolean ingame = false;
 
-    private ImageIcon red;
+    private ImageIcon moveAfterBomb;
+    private ImageIcon noMove;
     private ImageIcon green;
     private ImageIcon blue;
 
@@ -79,7 +80,7 @@ public class TicTacToeClient implements ActionListener {
             String serverAddress = (args.length == 0) ? "localhost" : args[1];
             TicTacToeClient client = new TicTacToeClient(serverAddress);
             client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            client.frame.setSize(1440, 700);
+            client.frame.setSize(1300, 700);
             client.frame.setVisible(true);
             client.frame.setResizable(false);
             client.play();
@@ -163,18 +164,20 @@ public class TicTacToeClient implements ActionListener {
 
    }
 
-// Сразу закачаем значки, чтоб не ебаться, лол оказывается у евлампия тот же присер змейки, что я нашел в инете
     private void loadImg() {
 
-        ImageIcon bl = createImageIcon("dot.png","Dot Image");
+        ImageIcon bl = createImageIcon("plX.png","Player O");
         blue = bl;
 
 
-        ImageIcon gr = createImageIcon("head.png","Head Image");
+        ImageIcon gr = createImageIcon("head.png","Player X");
         green = gr;
 
-        ImageIcon rd = createImageIcon("apple.png","Apple Image");
-        red = rd;
+        ImageIcon noMove = createImageIcon("noMove.png","No Move");
+        noMove = noMove;
+
+        ImageIcon kirp = createImageIcon("breakMove.png", "Move after bomb");
+        moveAfterBomb = kirp;
     }
 
     /**
@@ -197,9 +200,15 @@ public class TicTacToeClient implements ActionListener {
             response = in.readLine();
             if (response.startsWith("WELCOME")) {
                 char mark = response.charAt(8);
-                icon = mark == 'X' ? blue : green;
+                if (mark == 'X') {
+                    icon = blue;
+                }
+                else icon = green;
                 //new ImageIcon(mark == 'X' ? "x.gif" : "o.gif");
-                opponentIcon = mark == 'X' ? green : blue;
+                if (mark == 'X'){
+                    opponentIcon = green;
+                }
+                else opponentIcon = blue;
                 //new ImageIcon(mark == 'X' ? "o.gif" : "x.gif");
                 frame.setTitle("Tic Tac Toe - Player " + mark);
             }
@@ -299,7 +308,6 @@ public class TicTacToeClient implements ActionListener {
             if (ingame) {
                 if (press == KeyEvent.VK_LEFT) {
                     out.println("MOVE 1");
-
                 } else if (press == KeyEvent.VK_RIGHT) {
                     out.println("MOVE 3");
                 } else if (press == KeyEvent.VK_UP) {
@@ -308,6 +316,14 @@ public class TicTacToeClient implements ActionListener {
                     out.println("MOVE 4");
                 }else if (press == KeyEvent.VK_ENTER){
                     out.println("PROP");
+                }else if (press == KeyEvent.VK_W){//бомба вверх
+                    out.println("BOMB 2");
+                }else if (press == KeyEvent.VK_S){
+                    out.println("BOMB 4");
+                }else if (press == KeyEvent.VK_D){
+                    out.println("BOMB 3");
+                }else if (press == KeyEvent.VK_A){
+                    out.println("BOMB 1");
                 }
             }
 
