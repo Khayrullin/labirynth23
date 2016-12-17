@@ -251,6 +251,8 @@ public class Game {
                     output.println("OTHER WON" + location);
                 case 6:
                     output.println("OTHER LOSE" + location);
+                case 7:
+                    output.println("OTHER VZORVAL" + location);
 
             }
         }
@@ -272,6 +274,8 @@ public class Game {
                     output.println("CURRENT WON" + location);
                 case 6:
                     output.println("CURRENT LOSE" + location);
+                case 7:
+                    output.println("CURRENT VZORVAL" + location);
             }
         }
 
@@ -305,9 +309,16 @@ public class Game {
                         } else if (command.startsWith("BOMB")) {
                             int direction = Integer.parseInt(command.substring(5));
                             if (!hasWinner(getWantedIndex(direction, currentPlayer), currentPlayer)) {
+                                Object[] board2 = board;
+
                                 if (bombThatShit(direction, this)) {
-                                    currentPlayerAction(3, this.getLocation());
-                                    currentPlayer.opponent.otherPlayerAction(3, this.getLocation());
+                                    if (board2[getWantedIndex(direction, currentPlayer)] == Block.BRICK){
+                                        currentPlayerAction(7, this.getLocation());
+                                        currentPlayer.opponent.otherPlayerAction(7, this.getLocation());
+                                    }else{
+                                        currentPlayerAction(3, this.getLocation());
+                                        currentPlayer.opponent.otherPlayerAction(3, this.getLocation());
+                                    }
                                     currentPlayer = currentPlayer.opponent;
 
                                 } else {
