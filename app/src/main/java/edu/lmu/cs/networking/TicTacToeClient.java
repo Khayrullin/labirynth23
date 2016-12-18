@@ -36,15 +36,22 @@ import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
  *                             MESSAGE <text>
  *
  */
-public class TicTacToeClient implements ActionListener {
+public class TicTacToeClient{
+
+    private final int SIZE_SQUARE = 81;
+    private final int START_LOCATION = 40;
 
     private JFrame frame = new JFrame("Bombermans");
     private JLabel messageLabel = new JLabel("");
     private ImageIcon icon;
     private ImageIcon opponentIcon;
 
-    private Square[] board = new Square[162];
+    private Square[] board = new Square[SIZE_SQUARE];
+    private Square[] boardForOpponent = new Square[SIZE_SQUARE];
+
     private Square currentSquare;
+    private Square currentSquareForOpponent;
+
 
     private static int PORT = 8901;
     private Socket socket;
@@ -57,13 +64,10 @@ public class TicTacToeClient implements ActionListener {
     private int[] boardO99 = new int[81];
     private int wherePlayerO = 41;
 
-    private boolean upPress = false;
-    private boolean downPress = false;
-    private boolean rightPress = false;
-    private boolean leftPress = false;
 
 
-    private boolean ingame = false;
+
+    private boolean ingame = true;
 
     private ImageIcon moveAfterBomb;
     private ImageIcon noMove;
@@ -80,7 +84,7 @@ public class TicTacToeClient implements ActionListener {
             String serverAddress = (args.length == 0) ? "localhost" : args[1];
             TicTacToeClient client = new TicTacToeClient(serverAddress);
             client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            client.frame.setSize(1300, 700);
+            client.frame.setSize(750, 350);
             client.frame.setVisible(true);
             client.frame.setResizable(false);
             client.play();
@@ -96,7 +100,6 @@ public class TicTacToeClient implements ActionListener {
      */
     public TicTacToeClient(String serverAddress) throws Exception {
 
-        ingame = true;
 
         // Setup networking
         socket = new Socket(serverAddress, PORT);
@@ -105,7 +108,7 @@ public class TicTacToeClient implements ActionListener {
         out = new PrintWriter(socket.getOutputStream(), true);
 
         // Layout GUI
-        messageLabel.setBackground(Color.white);//хз что делает
+        messageLabel.setBackground(Color.white);
         frame.getContentPane().add(messageLabel, "South");
 
         JPanel boardPanel = new JPanel();
@@ -114,51 +117,73 @@ public class TicTacToeClient implements ActionListener {
 
 //        addKeyListener(new MovePlayer());
 //        TODO: вместо этой говнины определить какой игрок играет и перекинуть на нужный метод
-        for (int i = 0; i < board.length / 2; i++) {
+
+        for (int i = 0; i < board.length; i++) {
             final int j = i;
             board[i] = new Square();
             board[i].addKeyListener(new KeyAdapter() {
                 public void keyPressed(KeyEvent e) {
                     currentSquare = board[j];
-                    out.println("MOVE " + j);
-                    System.out.println("keyPress");
-                }
-            });
+
+                    int press = e.getKeyCode();
+                    if (press == KeyEvent.VK_LEFT) {//Ходы в разные стороны
+                        out.println("MOVE 1");
+                        System.out.println("alalalalala");
+                    } else if (press == KeyEvent.VK_RIGHT) {
+                        out.println("MOVE 3");
+                    } else if (press == KeyEvent.VK_UP) {
+                        out.println("MOVE 2");
+                    } else if (press == KeyEvent.VK_DOWN) {
+                        out.println("MOVE 4");
+                    }else if (press == KeyEvent.VK_ENTER){//Пропуск хода
+                        out.println("PROP");
+                    }else if (press == KeyEvent.VK_W){//бомбы в разнве стороны
+                        out.println("BOMB 2");
+                    }else if (press == KeyEvent.VK_S){
+                        out.println("BOMB 4");
+                    }else if (press == KeyEvent.VK_D){
+                        out.println("BOMB 3");
+                    }else if (press == KeyEvent.VK_A){
+                        out.println("BOMB 1");
+                    }
+
+                }});
             boardPanel.add(board[i]);
         }
+
 
         frame.getContentPane().add(boardPanel, "Center");
     }
 //двигаем Х
-   protected void MovePlayerX(){
-       if (upPress){
+   protected void movePlayerX(int resp){
+       if (resp == 2){
            wherePlayerX -=9;
 
        }
-       if (downPress){
+       if (resp == 4){
             wherePlayerX +=9;
        }
-       if (rightPress){
+       if (resp == 3){
            wherePlayerX += 1;
 
        }
-       if (leftPress){
+       if (resp == 1){
            wherePlayerX -=1;
        }
 
    }
 // двигаем О
-   protected void MovePlayerO(){
-       if (upPress){
+   protected void movePlayerO(int resp){
+       if (resp == 2){
            wherePlayerO -=9;
        }
-       if (downPress){
+       if (resp == 4){
            wherePlayerO +=9;
        }
-       if (rightPress){
+       if (resp == 3){
            wherePlayerO += 1;
        }
-       if (leftPress){
+       if (resp == 1){
            wherePlayerO -=1;
        }
 
@@ -193,6 +218,11 @@ public class TicTacToeClient implements ActionListener {
      * message is recevied then the loop will exit and the server
      * will be sent a "QUIT" message also.
      */
+
+   private int indicationX = 1;
+   private int indicationO = 0;
+
+
     public void play() throws Exception {
         loadImg();
         String response;
@@ -203,24 +233,27 @@ public class TicTacToeClient implements ActionListener {
                 if (mark == 'X') {
                     icon = blue;
                 }
-                else icon = green;
+                else
+                    icon = green;
                 //new ImageIcon(mark == 'X' ? "x.gif" : "o.gif");
                 if (mark == 'X'){
                     opponentIcon = green;
                 }
                 else opponentIcon = blue;
+
+                board[START_LOCATION].setIcon(icon);
+                board[START_LOCATION].repaint();
                 //new ImageIcon(mark == 'X' ? "o.gif" : "x.gif");
                 frame.setTitle("Tic Tac Toe - Player " + mark);
             }
             while (true) {
                 response = in.readLine();
-                if (response.startsWith("VALID_MOVE")) {
-//                    addKeyListener(new MovePlayer());
+                if (response.startsWith("CURRENT MOVED")) {
+                    int direction = Integer.parseInt(response.substring(5));
                     messageLabel.setText("Valid move, please wait");
                     currentSquare.setIcon(icon);
                     currentSquare.repaint();
                 } else if (response.startsWith("OPPONENT_MOVED")) {
-//                    addKeyListener(new MovePlayer());
                     int loc = Integer.parseInt(response.substring(15));
                     board[loc].setIcon(opponentIcon);
                     board[loc].repaint();
@@ -299,14 +332,14 @@ public class TicTacToeClient implements ActionListener {
 //    Посмотри, мб тоже что-нибудь интересное найдешь
 // - Ok
 
-    class MovePlayer extends KeyAdapter {
+    /*class MovePlayer extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-
+//Для моралфагов: я знаю, что надо использовать switch, но нет
             int press = e.getKeyCode();
 
             if (ingame) {
-                if (press == KeyEvent.VK_LEFT) {
+                if (press == KeyEvent.VK_LEFT) {//Ходы в разные стороны
                     out.println("MOVE 1");
                 } else if (press == KeyEvent.VK_RIGHT) {
                     out.println("MOVE 3");
@@ -314,9 +347,9 @@ public class TicTacToeClient implements ActionListener {
                     out.println("MOVE 2");
                 } else if (press == KeyEvent.VK_DOWN) {
                     out.println("MOVE 4");
-                }else if (press == KeyEvent.VK_ENTER){
+                }else if (press == KeyEvent.VK_ENTER){//Пропуск хода
                     out.println("PROP");
-                }else if (press == KeyEvent.VK_W){//бомба вверх
+                }else if (press == KeyEvent.VK_W){//бомбы в разнве стороны
                     out.println("BOMB 2");
                 }else if (press == KeyEvent.VK_S){
                     out.println("BOMB 4");
@@ -332,7 +365,7 @@ public class TicTacToeClient implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
             frame.repaint();
-        }
+        }*/
 
 
 
