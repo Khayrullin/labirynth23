@@ -37,9 +37,9 @@ import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
  *
  */
 public class TicTacToeClient{
-
-    private final int SIZE_SQUARE = 81;
-    private final int START_LOCATION = 40;
+    private final int ONE_LINE = 9;
+    private final int SIZE_SQUARE = ONE_LINE*ONE_LINE;
+    private final int START_LOCATION = (int)Math.floor(SIZE_SQUARE/2);
 
     private JFrame frame = new JFrame("Bombermans");
     private JLabel messageLabel = new JLabel("");
@@ -49,20 +49,14 @@ public class TicTacToeClient{
     private Square[] board = new Square[SIZE_SQUARE];
     private Square[] boardForOpponent = new Square[SIZE_SQUARE];
 
-    private Square currentSquare;
-    private Square currentSquareForOpponent;
+    private int currentSquareLocation;
+    public Square currentSquare;
 
 
     private static int PORT = 8901;
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
-
-    private int[] boardX99 = new int[81];//массив для поля 9х9, пусть одномерный, как и основной 5х5
-    private int wherePlayerX = 41;//в центре массива 9х9
-
-    private int[] boardO99 = new int[81];
-    private int wherePlayerO = 41;
 
 
 
@@ -79,20 +73,16 @@ public class TicTacToeClient{
      * Runs the client as an application.
      */
     public static void main(String[] args) throws Exception {
-        while (true) {
             //SMSSender.smsSend("Game started","79047640086");
             String serverAddress = (args.length == 0) ? "localhost" : args[1];
             TicTacToeClient client = new TicTacToeClient(serverAddress);
             client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            client.frame.setSize(750, 350);
+            client.frame.setSize(350, 350);
             client.frame.setVisible(true);
             client.frame.setResizable(false);
             client.play();
-            if (!client.wantsToPlayAgain()) {
-                break;
-            }
-        }
     }
+
 
     /**
      * Constructs the client by connecting to a server, laying out the
@@ -100,94 +90,27 @@ public class TicTacToeClient{
      */
     public TicTacToeClient(String serverAddress) throws Exception {
 
+        initBoard();
 
-        // Setup networking
         socket = new Socket(serverAddress, PORT);
         in = new BufferedReader(new InputStreamReader(
                 socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
 
-        // Layout GUI
-        messageLabel.setBackground(Color.white);
-        frame.getContentPane().add(messageLabel, "South");
-
-        JPanel boardPanel = new JPanel();
-        boardPanel.setBackground(Color.black);//границы
-        boardPanel.setLayout(new GridLayout(9, 18, 1, 1));
-
-//        addKeyListener(new MovePlayer());
-//        TODO: вместо этой говнины определить какой игрок играет и перекинуть на нужный метод
-
-        for (int i = 0; i < board.length; i++) {
-            final int j = i;
-            board[i] = new Square();
-            board[i].addKeyListener(new KeyAdapter() {
-                public void keyPressed(KeyEvent e) {
-                    currentSquare = board[j];
-
-                    int press = e.getKeyCode();
-                    if (press == KeyEvent.VK_LEFT) {//Ходы в разные стороны
-                        out.println("MOVE 1");
-                        System.out.println("alalalalala");
-                    } else if (press == KeyEvent.VK_RIGHT) {
-                        out.println("MOVE 3");
-                    } else if (press == KeyEvent.VK_UP) {
-                        out.println("MOVE 2");
-                    } else if (press == KeyEvent.VK_DOWN) {
-                        out.println("MOVE 4");
-                    }else if (press == KeyEvent.VK_ENTER){//Пропуск хода
-                        out.println("PROP");
-                    }else if (press == KeyEvent.VK_W){//бомбы в разнве стороны
-                        out.println("BOMB 2");
-                    }else if (press == KeyEvent.VK_S){
-                        out.println("BOMB 4");
-                    }else if (press == KeyEvent.VK_D){
-                        out.println("BOMB 3");
-                    }else if (press == KeyEvent.VK_A){
-                        out.println("BOMB 1");
-                    }
-
-                }});
-            boardPanel.add(board[i]);
-        }
-
-
-        frame.getContentPane().add(boardPanel, "Center");
     }
-//двигаем Х
-   protected void movePlayerX(int resp){
-       if (resp == 2){
-           wherePlayerX -=9;
+private void initBoard(){
+    JPanel boardPanel = new JPanel();
+    boardPanel.setBackground(Color.black);//границы
+    boardPanel.setLayout(new GridLayout(ONE_LINE, ONE_LINE*2, 1, 1));
+    for (int i = 0; i < board.length; i++) {
+        board[i] = new Square();
+        boardPanel.add(board[i]);
+    }
 
-       }
-       if (resp == 4){
-            wherePlayerX +=9;
-       }
-       if (resp == 3){
-           wherePlayerX += 1;
+    frame.getContentPane().add(boardPanel, "Center");
 
-       }
-       if (resp == 1){
-           wherePlayerX -=1;
-       }
 
-   }
-// двигаем О
-   protected void movePlayerO(int resp){
-       if (resp == 2){
-           wherePlayerO -=9;
-       }
-       if (resp == 4){
-           wherePlayerO +=9;
-       }
-       if (resp == 3){
-           wherePlayerO += 1;
-       }
-       if (resp == 1){
-           wherePlayerO -=1;
-       }
-
-   }
+}
 
     private void loadImg() {
 
@@ -205,26 +128,17 @@ public class TicTacToeClient{
         moveAfterBomb = kirp;
     }
 
-    /**
-     * The main thread of the client will listen for messages
-     * from the server.  The first message will be a "WELCOME"
-     * message in which we receive our mark.  Then we go into a
-     * loop listening for "VALID_MOVE", "OPPONENT_MOVED", "VICTORY",
-     * "DEFEAT", "TIE", "OPPONENT_QUIT or "MESSAGE" messages,
-     * and handling each message appropriately.  The "VICTORY",
-     * "DEFEAT" and "TIE" ask the user whether or not to play
-     * another game.  If the answer is no, the loop is exited and
-     * the server is sent a "QUIT" message.  If an OPPONENT_QUIT
-     * message is recevied then the loop will exit and the server
-     * will be sent a "QUIT" message also.
-     */
-
-   private int indicationX = 1;
-   private int indicationO = 0;
-
+    private void initCurSquare(){
+        currentSquare = board[currentSquareLocation];
+        currentSquare.setColor(Color.white);
+        currentSquare.setIcon(icon);
+        currentSquare.repaint();
+    }
 
     public void play() throws Exception {
+
         loadImg();
+
         String response;
         try {
             response = in.readLine();
@@ -232,24 +146,37 @@ public class TicTacToeClient{
                 char mark = response.charAt(8);
                 if (mark == 'X') {
                     icon = blue;
-                }
-                else
-                    icon = green;
-                //new ImageIcon(mark == 'X' ? "x.gif" : "o.gif");
-                if (mark == 'X'){
                     opponentIcon = green;
+                } else
+                {
+                    icon = green;
+                    opponentIcon = blue;
                 }
-                else opponentIcon = blue;
-
-                board[START_LOCATION].setIcon(icon);
-                board[START_LOCATION].repaint();
-                //new ImageIcon(mark == 'X' ? "o.gif" : "x.gif");
-                frame.setTitle("Tic Tac Toe - Player " + mark);
+                currentSquareLocation = START_LOCATION;
+                initCurSquare();
+                frame.setTitle("Player " + mark);
             }
-            while (true) {
+
+            move();
+
+          /*  while (true){
+                response = in.readLine();
+                if (response.startsWith("CURRENT_MOVED")) {
+                    int direction = Integer.parseInt(response.substring(15));
+                    int newDir = interpetateDirection(direction);
+                    currentSquareLocation += newDir + currentSquareLocation;
+                    initCurSquare();
+                }
+            }*/
+            //TODO : ПОСМОТРЕТЬ ЭТО ГОВНИЩЕ, КАК НАХУЙ БЛЯТЬ УДАЛЯТЬ ЕБАНУЮ ИКОНКУ!!!!
+            currentSquareLocation += 1;
+            System.out.println(currentSquareLocation);
+            initCurSquare();
+
+            /*while (true) {
                 response = in.readLine();
                 if (response.startsWith("CURRENT MOVED")) {
-                    int direction = Integer.parseInt(response.substring(5));
+                    int direction = Integer.parseInt(response.substring(15));
                     messageLabel.setText("Valid move, please wait");
                     currentSquare.setIcon(icon);
                     currentSquare.repaint();
@@ -272,26 +199,33 @@ public class TicTacToeClient{
                 }
             }
             out.println("QUIT");
+            */
         } finally {
             socket.close();
         }
     }
-
-    private boolean wantsToPlayAgain() {
-        int response = JOptionPane.showConfirmDialog(frame,
-                "Want to play again?",
-                "Tic Tac Toe is Fun Fun Fun",
-                JOptionPane.YES_NO_OPTION);
-        frame.dispose();
-        return response == JOptionPane.YES_OPTION;
+private int interpetateDirection(int direction){
+    int newDir;
+    switch (direction){
+        case 1:
+            newDir = 1;
+            break;
+        case 2:
+            newDir = -ONE_LINE;
+            break;
+        case 3:
+            newDir = -1;
+            break;
+        case 4:
+            newDir = ONE_LINE;
+            break;
+        default:
+            newDir = 0;
     }
+    return newDir;
+}
 
 
-    /**
-     * Graphical square in the client window.  Each square is
-     * a white panel containing.  A client calls setIcon() to fill
-     * it with an Icon, presumably an X or O.
-     */
     static class Square extends JPanel {
 
         JLabel label = new JLabel((Icon) null);
@@ -303,6 +237,13 @@ public class TicTacToeClient{
 
         public void setIcon(Icon icon) {
             label.setIcon(icon);
+        }
+        //TODO: NAHUI REMOVE!
+        public void removeIcon(Icon icon){
+            this.remove((Component) icon);
+        }
+        public void setColor(Color color){
+            this.setBackground(color);
         }
 
     }
@@ -326,46 +267,62 @@ public class TicTacToeClient{
     }
 
 
-//    Класс со считыванием стрелок, взял из примера с игрой с пакманом.
-//    TODO: В методе ?play? надо добавить строчку "addKeyListener(new MovePlayer());", в общем - надо доделать, скоро этим займусь
-// http://zetcode.com/tutorials/javagamestutorial/pacman/
-//    Посмотри, мб тоже что-нибудь интересное найдешь
-// - Ok
-
-    /*class MovePlayer extends KeyAdapter {
-        @Override
-        public void keyPressed(KeyEvent e) {
-//Для моралфагов: я знаю, что надо использовать switch, но нет
-            int press = e.getKeyCode();
-
-            if (ingame) {
-                if (press == KeyEvent.VK_LEFT) {//Ходы в разные стороны
-                    out.println("MOVE 1");
-                } else if (press == KeyEvent.VK_RIGHT) {
-                    out.println("MOVE 3");
-                } else if (press == KeyEvent.VK_UP) {
-                    out.println("MOVE 2");
-                } else if (press == KeyEvent.VK_DOWN) {
-                    out.println("MOVE 4");
-                }else if (press == KeyEvent.VK_ENTER){//Пропуск хода
-                    out.println("PROP");
-                }else if (press == KeyEvent.VK_W){//бомбы в разнве стороны
-                    out.println("BOMB 2");
-                }else if (press == KeyEvent.VK_S){
-                    out.println("BOMB 4");
-                }else if (press == KeyEvent.VK_D){
-                    out.println("BOMB 3");
-                }else if (press == KeyEvent.VK_A){
-                    out.println("BOMB 1");
+    private void move(){
+        frame.addKeyListener(new KeyAdapter(){
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int press = e.getKeyCode();
+                String event = null;
+                switch (press){
+                    case KeyEvent.VK_LEFT :
+                        event = "MOVE 1";
+                        System.out.println("LEFT");
+                        break;
+                    case KeyEvent.VK_RIGHT :
+                        event = "MOVE 3";
+                        System.out.println("RIGHT");
+                        break;
+                    case KeyEvent.VK_UP :
+                        event = "MOVE 2";
+                        System.out.println("UP ");
+                        break;
+                    case KeyEvent.VK_DOWN :
+                        event = "MOVE 4";
+                        System.out.println("DOWN");
+                        break;
+                    case KeyEvent.VK_ENTER :
+                        event = "PROP";
+                        System.out.println("ENTER");
+                        break;
+                    case KeyEvent.VK_W :
+                        event = "BOMB 2";
+                        System.out.println("W");
+                        break;
+                    case KeyEvent.VK_A :
+                        event = "BOMB 1";
+                        System.out.println("A");
+                        break;
+                    case KeyEvent.VK_S :
+                        event  = "BOMB 4";
+                        System.out.println("S");
+                        break;
+                    case KeyEvent.VK_D :
+                        event = "BOMB 3";
+                        System.out.println("D");
+                        break;
+                    default:
+                        event = "NONE";
                 }
+                out.println(event);
+                frame.setFocusable(false);
             }
-
-        }
+        });
     }
 
-        public void actionPerformed(ActionEvent e) {
+
+        public void actionPerformed() {
             frame.repaint();
-        }*/
+        }
 
 
 
