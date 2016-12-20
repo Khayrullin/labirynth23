@@ -242,18 +242,25 @@ public class Game {
             switch (field) {
                 case 1:
                     output.println("OTHER MOVED" + location);
+                    break;
                 case 2:
                     output.println("OTHER BLACK_KVAD" + location);
+                    break;
                 case 3:
                     output.println("OTHER EMPTY" + location);
+                    break;
                 case 4:
                     output.println("OTHER GRANIT" + location);
+                    break;
                 case 5:
                     output.println("OTHER WON" + location);
+                    break;
                 case 6:
                     output.println("OTHER LOSE" + location);
+                    break;
                 case 7:
                     output.println("OTHER VZORVAL" + location);
+                    break;
 
             }
         }
@@ -261,22 +268,29 @@ public class Game {
         /**
          * peredacha deystviy klientu
          */
-        public void currentPlayerAction(int field, int location) {
+        public void currentPlayerAction(int field) {
             switch (field) {
                 case 1:
-                    output.println("CURRENT MOVED" + location);
+                    output.println("CURRENT MOVED");
+                    break;
                 case 2:
-                    output.println("CURRENT BLACK_KVAD" + location);
+                    output.println("CURRENT BLACK_KVAD");
+                    break;
                 case 3:
-                    output.println("CURRENT EMPTY" + location);
+                    output.println("CURRENT EMPTY" );
+                    break;
                 case 4:
-                    output.println("CURRENT GRANIT" + location);
+                    output.println("CURRENT GRANIT");
+                    break;
                 case 5:
-                    output.println("CURRENT WON" + location);
+                    output.println("CURRENT WON");
+                    break;
                 case 6:
-                    output.println("CURRENT LOSE" + location);
+                    output.println("CURRENT LOSE");
+                    break;
                 case 7:
-                    output.println("CURRENT VZORVAL" + location);
+                    output.println("CURRENT VZORVAL");
+                    break;
             }
         }
 
@@ -301,11 +315,11 @@ public class Game {
                             int direction = Integer.parseInt(command.substring(5));
 
                             if (canIMoveIfCan_Move(direction, this)) {
-                                currentPlayerAction(1, this.getLocation());
-                                currentPlayer.opponent.otherPlayerAction(1, this.getLocation());
+                                currentPlayerAction(1);
+                                currentPlayer.opponent.otherPlayerAction(1, direction);
                             } else {
-                                currentPlayerAction(2, this.getLocation());
-                                currentPlayer.opponent.otherPlayerAction(2, this.getLocation());
+                                currentPlayerAction(2);
+                                currentPlayer.opponent.otherPlayerAction(2, direction);
                             }
                         } else if (command.startsWith("BOMB")) {
                             int direction = Integer.parseInt(command.substring(5));
@@ -314,22 +328,22 @@ public class Game {
 
                                 if (bombThatShit(direction, this)) {
                                     if (board2[getWantedIndex(direction, currentPlayer)] == Block.BRICK){
-                                        currentPlayerAction(7, this.getLocation());
-                                        currentPlayer.opponent.otherPlayerAction(7, this.getLocation());
+                                        currentPlayerAction(7);
+                                        currentPlayer.opponent.otherPlayerAction(7, direction);
                                     }else{
-                                        currentPlayerAction(3, this.getLocation());
-                                        currentPlayer.opponent.otherPlayerAction(3, this.getLocation());
+                                        currentPlayerAction(3);
+                                        currentPlayer.opponent.otherPlayerAction(3, direction);
                                     }
                                     currentPlayer = currentPlayer.opponent;
 
                                 } else {
-                                    currentPlayerAction(4, this.getLocation());
-                                    currentPlayer.opponent.otherPlayerAction(4, this.getLocation());
+                                    currentPlayerAction(4);
+                                    currentPlayer.opponent.otherPlayerAction(4, direction);
                                     currentPlayer = currentPlayer.opponent;
                                 }
                             } else {
-                                currentPlayerAction(5, this.getLocation());
-                                currentPlayer.opponent.otherPlayerAction(6, this.getLocation());
+                                currentPlayerAction(5);
+                                currentPlayer.opponent.otherPlayerAction(6, direction);
                             }
                         }  else if (command.startsWith("PROP")) {
                             currentPlayer = currentPlayer.opponent;
