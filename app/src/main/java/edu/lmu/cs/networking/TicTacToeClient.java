@@ -24,22 +24,25 @@ import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
  * I made a bunch of enhancements and rewrote large sections of the
  * code.  In particular I created the TTTP (Tic Tac Toe Protocol)
  * which is entirely text based.  Here are the strings that are sent:
- *
- *  Client -> Server           Server -> Client
- *  ----------------           ----------------
- *  MOVE <n>  (0 <= n <= 8)    WELCOME <char>  (char in {X, O})
- *  QUIT                       VALID_MOVE
- *                             OTHER_PLAYER_MOVED <n>
- *                             VICTORY
- *                             DEFEAT
- *                             TIE
- *                             MESSAGE <text>
- *
+ * <p>
+ * Client -> Server           Server -> Client
+ * ----------------           ----------------
+ * MOVE <n>  (0 <= n <= 8)    WELCOME <char>  (char in {X, O})
+ * QUIT                       VALID_MOVE
+ * OTHER_PLAYER_MOVED <n>
+ * VICTORY
+ * DEFEAT
+ * TIE
+ * MESSAGE <text>
  */
-public class TicTacToeClient{
+public class TicTacToeClient {
     private final int ONE_LINE = 9;
-    private final int SIZE_SQUARE = ONE_LINE*ONE_LINE;
-    private final int START_LOCATION = (int)Math.floor(SIZE_SQUARE/2);
+    private final int SIZE_SQUARE = ONE_LINE * ONE_LINE;
+    private final int START_LOCATION = (int) Math.floor(SIZE_SQUARE / 2);
+
+    private final Color BREAKED_COLOR = Color.pink;
+
+
 
     private JFrame frame = new JFrame("Bombermans");
     private JLabel messageLabel = new JLabel("");
@@ -59,7 +62,7 @@ public class TicTacToeClient{
     private PrintWriter out;
 
 
-
+    private int direction;
 
     private boolean ingame = true;
 
@@ -73,14 +76,14 @@ public class TicTacToeClient{
      * Runs the client as an application.
      */
     public static void main(String[] args) throws Exception {
-            //SMSSender.smsSend("Game started","79047640086");
-            String serverAddress = (args.length == 0) ? "localhost" : args[1];
-            TicTacToeClient client = new TicTacToeClient(serverAddress);
-            client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            client.frame.setSize(350, 350);
-            client.frame.setVisible(true);
-            client.frame.setResizable(false);
-            client.play();
+        //SMSSender.smsSend("Game started","79047640086");
+        String serverAddress = (args.length == 0) ? "localhost" : args[1];
+        TicTacToeClient client = new TicTacToeClient(serverAddress);
+        client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        client.frame.setSize(350, 350);
+        client.frame.setVisible(true);
+        client.frame.setResizable(false);
+        client.play();
     }
 
 
@@ -98,41 +101,65 @@ public class TicTacToeClient{
         out = new PrintWriter(socket.getOutputStream(), true);
 
     }
-private void initBoard(){
-    JPanel boardPanel = new JPanel();
-    boardPanel.setBackground(Color.black);//границы
-    boardPanel.setLayout(new GridLayout(ONE_LINE, ONE_LINE*2, 1, 1));
-    for (int i = 0; i < board.length; i++) {
-        board[i] = new Square();
-        boardPanel.add(board[i]);
+
+    private void initBoard() {
+        JPanel boardPanel = new JPanel();
+        boardPanel.setBackground(Color.black);//границы
+        boardPanel.setLayout(new GridLayout(ONE_LINE, ONE_LINE * 2, 1, 1));
+        for (int i = 0; i < board.length; i++) {
+            board[i] = new Square();
+            boardPanel.add(board[i]);
+        }
+
+        frame.getContentPane().add(boardPanel, "Center");
+
+
     }
-
-    frame.getContentPane().add(boardPanel, "Center");
-
-
-}
 
     private void loadImg() {
 
-        ImageIcon bl = createImageIcon("plX.png","Player O");
+        ImageIcon bl = createImageIcon("plX.png", "Player O");
         blue = bl;
 
 
-        ImageIcon gr = createImageIcon("head.png","Player X");
+        ImageIcon gr = createImageIcon("head.png", "Player X");
         green = gr;
 
-        ImageIcon noMove = createImageIcon("noMove.png","No Move");
+        ImageIcon noMove = createImageIcon("noMove.png", "No Move");
         noMove = noMove;
 
         ImageIcon kirp = createImageIcon("breakMove.png", "Move after bomb");
         moveAfterBomb = kirp;
     }
 
-    private void initCurSquare(){
+
+    private void initNewCurSquare() {
+        currentSquare.removeIcon();
+        currentSquareLocation += direction;
         currentSquare = board[currentSquareLocation];
-        currentSquare.setColor(Color.white);
+        if (!currentSquare.getColor().equals(BREAKED_COLOR)){
+            currentSquare.setColor(Color.white);
+        }
         currentSquare.setIcon(icon);
         currentSquare.repaint();
+    }
+
+    private void squareIsWall() {
+        Square wallSquare = board[currentSquareLocation + direction];
+        wallSquare.setColor(Color.black);
+        wallSquare.repaint();
+    }
+
+    private void squareIsGranit() {
+        Square granitSquare = board[currentSquareLocation + direction];
+        granitSquare.setColor(Color.red);
+        granitSquare.repaint();
+    }
+
+    private void squareIsFreeToGO() {
+        Square granitSquare = board[currentSquareLocation + direction];
+        granitSquare.setColor(BREAKED_COLOR);
+        granitSquare.repaint();
     }
 
     public void play() throws Exception {
@@ -147,31 +174,53 @@ private void initBoard(){
                 if (mark == 'X') {
                     icon = blue;
                     opponentIcon = green;
-                } else
-                {
+                } else {
                     icon = green;
                     opponentIcon = blue;
                 }
                 currentSquareLocation = START_LOCATION;
-                initCurSquare();
+                currentSquare = board[currentSquareLocation];
+                currentSquare.setColor(Color.white);
+                currentSquare.setIcon(icon);
+                currentSquare.repaint();
                 frame.setTitle("Player " + mark);
             }
 
-            move();
+            frame.setFocusable(false);
+            bindKeyListener();
 
-          /*  while (true){
+            //проверка ответа
+            while (true) {
                 response = in.readLine();
-                if (response.startsWith("CURRENT_MOVED")) {
-                    int direction = Integer.parseInt(response.substring(15));
-                    int newDir = interpetateDirection(direction);
-                    currentSquareLocation += newDir + currentSquareLocation;
-                    initCurSquare();
+                System.out.println(response);
+                if (response.endsWith("Your move") || (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD")))) {
+                    frame.setFocusable(true);
                 }
-            }*/
-            //TODO : ПОСМОТРЕТЬ ЭТО ГОВНИЩЕ, КАК НАХУЙ БЛЯТЬ УДАЛЯТЬ ЕБАНУЮ ИКОНКУ!!!!
-            currentSquareLocation += 1;
-            System.out.println(currentSquareLocation);
-            initCurSquare();
+                if (response.startsWith("CURRENT")) {
+                    if (response.startsWith("CURRENT MOVED")) {
+                        initNewCurSquare();
+                    } else if (response.startsWith("CURRENT BLACK_KVAD")) {
+                        squareIsWall();
+                        frame.setFocusable(true);
+                    } else if (response.startsWith("CURRENT EMPTY")) {
+                        squareIsFreeToGO();
+                    } else if (response.startsWith("CURRENT GRANIT")) {
+                        squareIsGranit();
+                    } else if (response.startsWith("CURRENT WON")) {
+
+
+                    } else if (response.startsWith("CURRENT LOSE")) {
+                    } else if (response.startsWith("CURRENT VZORVAL")) {
+                    }
+                } else if (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD"))) {
+                    System.out.println("Я запускаюсь");
+                    frame.setFocusable(true);
+                }
+            }
+
+
+          /*  System.out.println(currentSquareLocation);
+            initCurSquare();*/
 
             /*while (true) {
                 response = in.readLine();
@@ -204,26 +253,6 @@ private void initBoard(){
             socket.close();
         }
     }
-private int interpetateDirection(int direction){
-    int newDir;
-    switch (direction){
-        case 1:
-            newDir = 1;
-            break;
-        case 2:
-            newDir = -ONE_LINE;
-            break;
-        case 3:
-            newDir = -1;
-            break;
-        case 4:
-            newDir = ONE_LINE;
-            break;
-        default:
-            newDir = 0;
-    }
-    return newDir;
-}
 
 
     static class Square extends JPanel {
@@ -238,14 +267,19 @@ private int interpetateDirection(int direction){
         public void setIcon(Icon icon) {
             label.setIcon(icon);
         }
-        //TODO: NAHUI REMOVE!
-        public void removeIcon(Icon icon){
-            this.remove((Component) icon);
+
+
+        public void removeIcon() {
+            this.setIcon(null);
         }
-        public void setColor(Color color){
+
+        public void setColor(Color color) {
             this.setBackground(color);
         }
 
+        public Color getColor() {
+            return this.getBackground();
+        }
     }
 
     /**
@@ -267,63 +301,74 @@ private int interpetateDirection(int direction){
     }
 
 
-    private void move(){
-        frame.addKeyListener(new KeyAdapter(){
+    private void bindKeyListener() {
+        frame.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 int press = e.getKeyCode();
-                String event = null;
-                switch (press){
-                    case KeyEvent.VK_LEFT :
+                String event;
+
+                switch (press) {
+                    case KeyEvent.VK_LEFT:
                         event = "MOVE 1";
                         System.out.println("LEFT");
+                        direction = -1;
                         break;
-                    case KeyEvent.VK_RIGHT :
+                    case KeyEvent.VK_RIGHT:
                         event = "MOVE 3";
                         System.out.println("RIGHT");
+                        direction = 1;
                         break;
-                    case KeyEvent.VK_UP :
+                    case KeyEvent.VK_UP:
                         event = "MOVE 2";
                         System.out.println("UP ");
+                        direction = 0 - ONE_LINE;
                         break;
-                    case KeyEvent.VK_DOWN :
+                    case KeyEvent.VK_DOWN:
                         event = "MOVE 4";
                         System.out.println("DOWN");
+                        direction = ONE_LINE;
                         break;
-                    case KeyEvent.VK_ENTER :
+                    case KeyEvent.VK_ENTER:
                         event = "PROP";
                         System.out.println("ENTER");
                         break;
-                    case KeyEvent.VK_W :
+                    case KeyEvent.VK_W:
                         event = "BOMB 2";
                         System.out.println("W");
+                        direction = 0 - ONE_LINE;
                         break;
-                    case KeyEvent.VK_A :
+                    case KeyEvent.VK_A:
                         event = "BOMB 1";
                         System.out.println("A");
+                        direction = -1;
                         break;
-                    case KeyEvent.VK_S :
-                        event  = "BOMB 4";
+                    case KeyEvent.VK_S:
+                        event = "BOMB 4";
                         System.out.println("S");
+                        direction = ONE_LINE;
                         break;
-                    case KeyEvent.VK_D :
+                    case KeyEvent.VK_D:
                         event = "BOMB 3";
                         System.out.println("D");
+                        direction = 1;
                         break;
                     default:
                         event = "NONE";
+                        System.out.println("none");
                 }
                 out.println(event);
+                System.out.println(event);
                 frame.setFocusable(false);
+
             }
         });
     }
 
 
-        public void actionPerformed() {
-            frame.repaint();
-        }
-
+    public void actionPerformed() {
+        frame.repaint();
+    }
 
 
 }

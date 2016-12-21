@@ -317,10 +317,13 @@ public class Game {
                             if (canIMoveIfCan_Move(direction, this)) {
                                 currentPlayerAction(1);
                                 currentPlayer.opponent.otherPlayerAction(1, direction);
+                                currentPlayer = currentPlayer.opponent;
                             } else {
                                 currentPlayerAction(2);
                                 currentPlayer.opponent.otherPlayerAction(2, direction);
                             }
+
+
                         } else if (command.startsWith("BOMB")) {
                             int direction = Integer.parseInt(command.substring(5));
                             if (!hasWinner(getWantedIndex(direction, currentPlayer), currentPlayer)) {
