@@ -5,7 +5,7 @@ package edu.lmu.cs.networking;
  */
 public enum Block {
 
-    BRICK(true), IMMORTAL(false);
+    BRICK(true), IMMORTAL(false), E_BRICK(true);
 
 
     boolean destructive;

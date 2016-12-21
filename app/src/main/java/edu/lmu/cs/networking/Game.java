@@ -130,8 +130,13 @@ public class Game {
         } else {
             if (player == currentPlayer &&
                     board[wantedIndex] != Block.IMMORTAL && wantedIndex != player.opponent.getLocation()) {
-                board[wantedIndex] = null;
-                return true;
+                if (board[wantedIndex] == Block.BRICK) {
+                    board[wantedIndex] = Block.E_BRICK;
+                    return true;
+                } else {
+                    board[wantedIndex] = null;
+                    return true;
+                }
             }
         }
         return false;
@@ -261,6 +266,9 @@ public class Game {
                 case 7:
                     output.println("OTHER VZORVAL" + location);
                     break;
+                case 8:
+                    output.println("OTHER MOVED2" + location);
+                    break;
 
             }
         }
@@ -277,7 +285,7 @@ public class Game {
                     output.println("CURRENT BLACK_KVAD");
                     break;
                 case 3:
-                    output.println("CURRENT EMPTY" );
+                    output.println("CURRENT EMPTY");
                     break;
                 case 4:
                     output.println("CURRENT GRANIT");
@@ -290,6 +298,9 @@ public class Game {
                     break;
                 case 7:
                     output.println("CURRENT VZORVAL");
+                    break;
+                case 8:
+                    output.println("CURRENT MOVED2");
                     break;
             }
         }
@@ -314,26 +325,30 @@ public class Game {
                         if (command.startsWith("MOVE")) {
                             int direction = Integer.parseInt(command.substring(5));
 
+
                             if (canIMoveIfCan_Move(direction, this)) {
-                                currentPlayerAction(1);
-                                currentPlayer.opponent.otherPlayerAction(1, direction);
-                                currentPlayer = currentPlayer.opponent;
+                                if (board[getWantedIndex(direction, currentPlayer)] == Block.E_BRICK) {
+                                    currentPlayerAction(8);
+                                    currentPlayer.opponent.otherPlayerAction(8, direction);
+                                } else {
+
+                                    currentPlayerAction(1);
+                                    currentPlayer.opponent.otherPlayerAction(1, direction);
+                                }
                             } else {
                                 currentPlayerAction(2);
                                 currentPlayer.opponent.otherPlayerAction(2, direction);
                             }
-
-
                         } else if (command.startsWith("BOMB")) {
                             int direction = Integer.parseInt(command.substring(5));
                             if (!hasWinner(getWantedIndex(direction, currentPlayer), currentPlayer)) {
                                 Object[] board2 = board;
 
                                 if (bombThatShit(direction, this)) {
-                                    if (board2[getWantedIndex(direction, currentPlayer)] == Block.BRICK){
+                                    if (board2[getWantedIndex(direction, currentPlayer)] == Block.BRICK) {
                                         currentPlayerAction(7);
                                         currentPlayer.opponent.otherPlayerAction(7, direction);
-                                    }else{
+                                    } else {
                                         currentPlayerAction(3);
                                         currentPlayer.opponent.otherPlayerAction(3, direction);
                                     }
@@ -348,9 +363,9 @@ public class Game {
                                 currentPlayerAction(5);
                                 currentPlayer.opponent.otherPlayerAction(6, direction);
                             }
-                        }  else if (command.startsWith("PROP")) {
+                        } else if (command.startsWith("PROP")) {
                             currentPlayer = currentPlayer.opponent;
-                        }else if (command.startsWith("QUIT")) {
+                        } else if (command.startsWith("QUIT")) {
                             return;
                         }
                     } else output.println("MESSAGE ?");
