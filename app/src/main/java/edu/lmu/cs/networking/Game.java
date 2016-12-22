@@ -342,7 +342,8 @@ public class Game {
                         } else if (command.startsWith("BOMB")) {
                             int direction = Integer.parseInt(command.substring(5));
                             if (!hasWinner(getWantedIndex(direction, currentPlayer), currentPlayer)) {
-                                Object[] board2 = board;
+                                Object[] board2 = new Object[board.length];
+                                System.arraycopy(board,0,board2,0,board.length);
 
                                 if (bombThatShit(direction, this)) {
                                     if (board2[getWantedIndex(direction, currentPlayer)] == Block.BRICK) {
