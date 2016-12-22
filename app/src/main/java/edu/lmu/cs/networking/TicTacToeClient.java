@@ -155,7 +155,10 @@ public class TicTacToeClient {
             }
 
         } finally{
-            socket.close();
+            try {
+                socket.close();
+            } catch (IOException e) {
+            }
         }
     }
 
