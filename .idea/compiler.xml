@@ -11,7 +11,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="jnlpapp" target="1.5" />
+      <module name="jnlpapp" target="1.7" />
       <module name="labirynth2" target="1.5" />
       <module name="webapp" target="1.5" />
     </bytecodeTargetLevel>

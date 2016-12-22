@@ -267,7 +267,7 @@ public class Game {
                     output.println("OTHER VZORVAL" + location);
                     break;
                 case 8:
-                    output.println("OTHER MOVED2" + location);
+                    output.println("OTHER WAS HERE");
                     break;
 
             }
@@ -300,7 +300,7 @@ public class Game {
                     output.println("CURRENT VZORVAL");
                     break;
                 case 8:
-                    output.println("CURRENT MOVED2");
+                    output.println("CURRENT WAS HERE");
                     break;
             }
         }
@@ -342,7 +342,8 @@ public class Game {
                         } else if (command.startsWith("BOMB")) {
                             int direction = Integer.parseInt(command.substring(5));
                             if (!hasWinner(getWantedIndex(direction, currentPlayer), currentPlayer)) {
-                                Object[] board2 = board;
+                                Object[] board2 = new Object[board.length];
+                                System.arraycopy(board,0,board2,0,board.length);
 
                                 if (bombThatShit(direction, this)) {
                                     if (board2[getWantedIndex(direction, currentPlayer)] == Block.BRICK) {
