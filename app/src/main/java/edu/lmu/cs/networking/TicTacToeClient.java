@@ -206,8 +206,8 @@ public class TicTacToeClient {
 
             while (true) {
                 response = in.readLine();
-                    System.out.println(response);
                 if (response != null) {
+                    System.out.println(response);
                     if (response.endsWith("Your move") || (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD")))) {
                         frame.setFocusable(true);
                     }
@@ -243,36 +243,7 @@ public class TicTacToeClient {
             }
 
 
-          /*  System.out.println(currentSquareLocation);
-            initCurSquare();*/
 
-            /*while (true) {
-                response = in.readLine();
-                if (response.startsWith("CURRENT MOVED")) {
-                    int direction = Integer.parseInt(response.substring(15));
-                    messageLabel.setText("Valid move, please wait");
-                    currentSquare.setIcon(icon);
-                    currentSquare.repaint();
-                } else if (response.startsWith("OPPONENT_MOVED")) {
-                    int loc = Integer.parseInt(response.substring(15));
-                    board[loc].setIcon(opponentIcon);
-                    board[loc].repaint();
-                    messageLabel.setText("Opponent moved, your turn");
-                } else if (response.startsWith("VICTORY")) {
-                    messageLabel.setText("You win");
-                    break;
-                } else if (response.startsWith("DEFEAT")) {
-                    messageLabel.setText("You lose");
-                    break;
-                } else if (response.startsWith("TIE")) {
-                    messageLabel.setText("You tied");
-                    break;
-                } else if (response.startsWith("MESSAGE")) {
-                    messageLabel.setText(response.substring(8));
-                }
-            }
-            out.println("QUIT");
-            */
         } finally {
             socket.close();
         }
@@ -382,8 +353,10 @@ public class TicTacToeClient {
                 }
                 out.println(event);
                 System.out.println(event);
-                if (!event.equals("WRONG KEY")){
+                if (!event.equals("WRONG KEY")) {
                     frame.setFocusable(false);
+                }else{
+                    messageLabel.setText("Введена неверная клавиша!Попробуй ещё");
                 }
 
 
