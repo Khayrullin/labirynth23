@@ -41,8 +41,7 @@ public class TicTacToeClient {
     private final int START_LOCATION = (int) Math.floor(SIZE_SQUARE / 2);
 
     private final Color BREAKED_COLOR = Color.pink;
-
-
+    private final Color FREE_COLOR = Color.white;
 
     private JFrame frame = new JFrame("Bombermans");
     private JLabel messageLabel = new JLabel("");
@@ -80,7 +79,7 @@ public class TicTacToeClient {
         String serverAddress = (args.length == 0) ? "localhost" : args[1];
         TicTacToeClient client = new TicTacToeClient(serverAddress);
         client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        client.frame.setSize(350, 350);
+        client.frame.setSize(350, 450);
         client.frame.setVisible(true);
         client.frame.setResizable(false);
         client.play();
@@ -112,7 +111,8 @@ public class TicTacToeClient {
         }
 
         frame.getContentPane().add(boardPanel, "Center");
-
+        messageLabel.setSize(350,100);
+        frame.getContentPane().add(messageLabel, BorderLayout.NORTH);
 
     }
 
@@ -137,8 +137,8 @@ public class TicTacToeClient {
         currentSquare.removeIcon();
         currentSquareLocation += direction;
         currentSquare = board[currentSquareLocation];
-        if (!currentSquare.getColor().equals(BREAKED_COLOR)){
-            currentSquare.setColor(Color.white);
+        if (!currentSquare.getColor().equals(BREAKED_COLOR)) {
+            currentSquare.setColor(FREE_COLOR);
         }
         currentSquare.setIcon(icon);
         currentSquare.repaint();
@@ -148,18 +148,31 @@ public class TicTacToeClient {
         Square wallSquare = board[currentSquareLocation + direction];
         wallSquare.setColor(Color.black);
         wallSquare.repaint();
+        messageLabel.setText("Здесь неизвестная стена");
     }
 
     private void squareIsGranit() {
         Square granitSquare = board[currentSquareLocation + direction];
         granitSquare.setColor(Color.red);
         granitSquare.repaint();
+        messageLabel.setText("Эта стена - невзрываемый гранит.");
     }
 
     private void squareIsFreeToGO() {
-        Square granitSquare = board[currentSquareLocation + direction];
-        granitSquare.setColor(BREAKED_COLOR);
-        granitSquare.repaint();
+        Square freeSquare = board[currentSquareLocation + direction];
+        freeSquare.setColor(FREE_COLOR);
+        freeSquare.repaint();
+        messageLabel.setText("Тут ничего нет");
+    }
+
+    private void squareAfterBrick() {
+        Square emptySquare = board[currentSquareLocation + direction];
+        if (!emptySquare.getColor().equals(FREE_COLOR)){
+            emptySquare.setColor(BREAKED_COLOR);
+            emptySquare.repaint();
+        }
+        messageLabel.setText("Здесь был кирпич");
+
     }
 
     public void play() throws Exception {
@@ -184,36 +197,47 @@ public class TicTacToeClient {
                 currentSquare.setIcon(icon);
                 currentSquare.repaint();
                 frame.setTitle("Player " + mark);
+
             }
 
-            frame.setFocusable(false);
             bindKeyListener();
 
             //проверка ответа
+
             while (true) {
                 response = in.readLine();
-                System.out.println(response);
-                if (response.endsWith("Your move") || (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD")))) {
-                    frame.setFocusable(true);
-                }
-                if (response.startsWith("CURRENT")) {
-                    if (response.startsWith("CURRENT MOVED")) {
-                        initNewCurSquare();
-                    } else if (response.startsWith("CURRENT BLACK_KVAD")) {
-                        squareIsWall();
+                    System.out.println(response);
+                if (response != null) {
+                    if (response.endsWith("Your move") || (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD")))) {
                         frame.setFocusable(true);
-                    } else if (response.startsWith("CURRENT EMPTY")) {
-                        squareIsFreeToGO();
-                    } else if (response.startsWith("CURRENT GRANIT")) {
-                        squareIsGranit();
-                    } else if (response.startsWith("CURRENT WON")) {
-
-
-                    } else if (response.startsWith("CURRENT LOSE")) {
-                    } else if (response.startsWith("CURRENT VZORVAL")) {
                     }
-                } else if (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD"))) {
-                    System.out.println("Я запускаюсь");
+                    if (response.startsWith("CURRENT")) {
+                        if (response.startsWith("CURRENT MOVED")) {
+                            initNewCurSquare();
+                        } else if (response.startsWith("CURRENT BLACK_KVAD")) {
+                            squareIsWall();
+                            frame.setFocusable(true);
+                            frame.requestFocus();
+                        } else if (response.startsWith("CURRENT EMPTY")) {
+                            squareIsFreeToGO();
+                        } else if (response.startsWith("CURRENT GRANIT")) {
+                            squareIsGranit();
+                        } else if (response.startsWith("CURRENT WON")) {
+                            messageLabel.setText("You win!");
+                            break;
+                        } else if (response.startsWith("CURRENT LOSE")) {
+                            messageLabel.setText("You lose! Ha-ha");
+                            break;
+                        } else if (response.startsWith("CURRENT VZORVAL")) {
+                            squareAfterBrick();
+                        } else if (response.startsWith("CURRENT OTHER WAS HERE")) {
+                            squareAfterBrick();
+                        }
+                    } else if (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD"))) {
+                        System.out.println("Я запускаюсь");
+                        frame.setFocusable(true);
+                    }
+                }else {
                     frame.setFocusable(true);
                 }
             }
@@ -354,12 +378,14 @@ public class TicTacToeClient {
                         direction = 1;
                         break;
                     default:
-                        event = "NONE";
-                        System.out.println("none");
+                        event = "WRONG KEY";
                 }
                 out.println(event);
                 System.out.println(event);
-                frame.setFocusable(false);
+                if (!event.equals("WRONG KEY")){
+                    frame.setFocusable(false);
+                }
+
 
             }
         });
