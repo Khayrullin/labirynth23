@@ -3,6 +3,7 @@ package edu.lmu.cs.networking;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -95,6 +96,7 @@ public class TicTacToeClient {
         JPanel boardPanel = squareUtil.initBoard(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION);
         frame.getContentPane().add(boardPanel, "Center");
         messageLabel.setSize(350, 100);
+        messageLabel.setText("");
         frame.getContentPane().add(messageLabel, BorderLayout.NORTH);
 
     }
@@ -143,7 +145,7 @@ public class TicTacToeClient {
                         } else if (response.startsWith("CURRENT OTHER WAS HERE")) {
                             bombedWoodenWall();
                         }
-                    } else if (response.startsWith("OTHER") && (!response.endsWith("MOVED") || !(response.endsWith("BLACK_KVAD")))) {
+                    } else if (response.startsWith("OTHER") && !response.contains("MOVED") && !(response.contains("BLACK_KVAD"))) {
                         System.out.println("Запускаюсь");
                         switchOnKeyListener();
                     }
@@ -152,18 +154,19 @@ public class TicTacToeClient {
                 }
             }
 
-        } finally {
+        } finally{
             socket.close();
         }
     }
 
     private void stuckWithWall() {
         squareUtil.squareIsWall(direction);
-        messageLabel.setText("Здесь неизвестная стена");
+        messageLabel.setText("Здесь неизвестная стена. Вы можете её взорвать.");
     }
 
     private void move() {
         squareUtil.initNewCurSquare(direction);
+        messageLabel.setText("Можете взорвать клетку или пропустить ход.");
     }
 
     private void freeWay() {
@@ -261,9 +264,12 @@ public class TicTacToeClient {
                 System.out.println(event);
                 if (event != null && !event.equals("WRONG KEY")) {
                     out.println(event);
-                    frame.setFocusable(false);
                     if (event.startsWith("MOVE")) {
                         moved = true;
+                        switchOnKeyListener();
+                    } else {
+                        frame.setFocusable(false);
+                        moved = false;
                     }
                 } else {
                     messageLabel.setText("Введена неверная клавиша!Попробуй ещё");
@@ -274,10 +280,6 @@ public class TicTacToeClient {
         });
     }
 
-
-    public void actionPerformed() {
-        frame.repaint();
-    }
 
 
 }
