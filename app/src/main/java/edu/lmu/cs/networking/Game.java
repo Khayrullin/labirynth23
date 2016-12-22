@@ -267,7 +267,7 @@ public class Game {
                     output.println("OTHER VZORVAL" + location);
                     break;
                 case 8:
-                    output.println("OTHER MOVED2" + location);
+                    output.println("OTHER WAS HERE");
                     break;
 
             }
@@ -300,7 +300,7 @@ public class Game {
                     output.println("CURRENT VZORVAL");
                     break;
                 case 8:
-                    output.println("CURRENT MOVED2");
+                    output.println("CURRENT WAS HERE");
                     break;
             }
         }
