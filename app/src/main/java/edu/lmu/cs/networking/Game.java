@@ -363,6 +363,7 @@ public class Game {
                                         currentPlayer.opponent.otherPlayerAction(3, direction);
                                     }
                                     currentPlayer = currentPlayer.opponent;
+                                    System.out.println("1  "+getLocation());
                                     currentPlayerAction(9);
 
                                 } else {
@@ -370,6 +371,7 @@ public class Game {
                                     currentPlayer.opponent.otherPlayerAction(4, direction);
                                     currentPlayer = currentPlayer.opponent;
                                     currentPlayerAction(9);
+                                    System.out.println("2  "+getLocation());
                                 }
                             } else {
                                 currentPlayerAction(5);
@@ -378,6 +380,7 @@ public class Game {
                         } else if (command.startsWith("PROP")) {
                             currentPlayer = currentPlayer.opponent;
                             currentPlayerAction(9);
+                            System.out.println("3  "+getLocation());
                         } else if (command.startsWith("QUIT")) {
                             return;
                         }
