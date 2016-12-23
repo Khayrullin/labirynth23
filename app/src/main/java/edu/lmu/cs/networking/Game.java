@@ -302,6 +302,9 @@ public class Game {
                 case 8:
                     output.println("CURRENT WAS HERE");
                     break;
+                case 9:
+                    output.println("CURRENT END");
+                    break;
             }
         }
 
@@ -354,11 +357,13 @@ public class Game {
                                         currentPlayer.opponent.otherPlayerAction(3, direction);
                                     }
                                     currentPlayer = currentPlayer.opponent;
+                                    currentPlayerAction(9);
 
                                 } else {
                                     currentPlayerAction(4);
                                     currentPlayer.opponent.otherPlayerAction(4, direction);
                                     currentPlayer = currentPlayer.opponent;
+                                    currentPlayerAction(9);
                                 }
                             } else {
                                 currentPlayerAction(5);
@@ -366,6 +371,7 @@ public class Game {
                             }
                         } else if (command.startsWith("PROP")) {
                             currentPlayer = currentPlayer.opponent;
+                            currentPlayerAction(9);
                         } else if (command.startsWith("QUIT")) {
                             return;
                         }
