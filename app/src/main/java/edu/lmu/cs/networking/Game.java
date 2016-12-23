@@ -134,6 +134,9 @@ public class Game {
                     board[wantedIndex] = Block.E_BRICK;
                     return true;
                 } else {
+                    if(board[wantedIndex] == Block.E_BRICK){
+                        return true;
+                    }
                     board[wantedIndex] = null;
                     return true;
                 }
@@ -267,7 +270,7 @@ public class Game {
                     output.println("OTHER VZORVAL" + " " + location);
                     break;
                 case 8:
-                    output.println("OTHER WAS HERE");
+                    output.println("OTHER WAS HERE"+ " " + location);
                     break;
 
             }
