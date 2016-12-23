@@ -249,7 +249,7 @@ public class Game {
                     output.println("OTHER MOVED" + " " + location);
                     break;
                 case 2:
-                    output.println("OTHER BLACK_KVAD" + " " +  location);
+                    output.println("OTHER BLACK_KVAD" + " " + location);
                     break;
                 case 3:
                     output.println("OTHER EMPTY" + " " + location);
@@ -327,10 +327,12 @@ public class Game {
                     if (this == currentPlayer) {
                         if (command.startsWith("MOVE")) {
                             int direction = Integer.parseInt(command.substring(5));
+                            int wantedIndex = getWantedIndex(direction, currentPlayer);
 
 
                             if (canIMoveIfCan_Move(direction, this)) {
-                                if (board[getWantedIndex(direction, currentPlayer)] == Block.E_BRICK) {
+                                if (!(wantedIndex > board.length - 1 || wantedIndex < 0)
+                                        && board[wantedIndex] == Block.E_BRICK) {
                                     currentPlayerAction(8);
                                     currentPlayer.opponent.otherPlayerAction(8, direction);
                                 } else {
@@ -344,12 +346,16 @@ public class Game {
                             }
                         } else if (command.startsWith("BOMB")) {
                             int direction = Integer.parseInt(command.substring(5));
-                            if (!hasWinner(getWantedIndex(direction, currentPlayer), currentPlayer)) {
+                            int wantedIndex = getWantedIndex(direction, currentPlayer);
+
+                            if (!hasWinner(direction, currentPlayer)) {
                                 Object[] board2 = new Object[board.length];
-                                System.arraycopy(board,0,board2,0,board.length);
+                                System.arraycopy(board, 0, board2, 0, board.length);
 
                                 if (bombThatShit(direction, this)) {
-                                    if (board2[getWantedIndex(direction, currentPlayer)] == Block.BRICK) {
+
+                                    if (!(wantedIndex > board.length - 1 || wantedIndex < 0)
+                                            && board2[wantedIndex] == Block.BRICK) {
                                         currentPlayerAction(7);
                                         currentPlayer.opponent.otherPlayerAction(7, direction);
                                     } else {
