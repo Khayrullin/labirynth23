@@ -246,25 +246,25 @@ public class Game {
         public void otherPlayerAction(int field, int location) {
             switch (field) {
                 case 1:
-                    output.println("OTHER MOVED" + location);
+                    output.println("OTHER MOVED" + " " + location);
                     break;
                 case 2:
-                    output.println("OTHER BLACK_KVAD" + location);
+                    output.println("OTHER BLACK_KVAD" + " " +  location);
                     break;
                 case 3:
-                    output.println("OTHER EMPTY" + location);
+                    output.println("OTHER EMPTY" + " " + location);
                     break;
                 case 4:
-                    output.println("OTHER GRANIT" + location);
+                    output.println("OTHER GRANIT" + " " + location);
                     break;
                 case 5:
-                    output.println("OTHER WON" + location);
+                    output.println("OTHER WON" + " " + location);
                     break;
                 case 6:
-                    output.println("OTHER LOSE" + location);
+                    output.println("OTHER LOSE" + " " + location);
                     break;
                 case 7:
-                    output.println("OTHER VZORVAL" + location);
+                    output.println("OTHER VZORVAL" + " " + location);
                     break;
                 case 8:
                     output.println("OTHER WAS HERE");

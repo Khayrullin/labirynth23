@@ -3,6 +3,7 @@ package edu.lmu.cs.networking;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -15,6 +16,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.meo.SMSSender;
+import edu.lmu.cs.utils.SquareUtil;
 
 import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
 
@@ -36,23 +38,16 @@ import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
  * MESSAGE <text>
  */
 public class TicTacToeClient {
-    private final int ONE_LINE = 9;
-    private final int SIZE_SQUARE = ONE_LINE * ONE_LINE;
-    private final int START_LOCATION = (int) Math.floor(SIZE_SQUARE / 2);
+    private final int ONE_LINE_SQUARES = 9;
+    private final int BOARD_SIZE = ONE_LINE_SQUARES * ONE_LINE_SQUARES;
+    private final int START_LOCATION = (int) Math.floor(BOARD_SIZE / 2);
 
-    private final Color BREAKED_COLOR = Color.pink;
-    private final Color FREE_COLOR = Color.white;
 
     private JFrame frame = new JFrame("Bombermans");
     private JLabel messageLabel = new JLabel("");
-    private ImageIcon icon;
-    private ImageIcon opponentIcon;
 
-    private Square[] board = new Square[SIZE_SQUARE];
-    private Square[] boardForOpponent = new Square[SIZE_SQUARE];
 
-    private int currentSquareLocation;
-    public Square currentSquare;
+    private SquareUtil squareUtil = SquareUtil.getInstance();
 
 
     private static int PORT = 8901;
@@ -64,12 +59,7 @@ public class TicTacToeClient {
     private int direction;
 
     private boolean ingame = true;
-
-    private ImageIcon moveAfterBomb;
-    private ImageIcon noMove;
-    private ImageIcon green;
-    private ImageIcon blue;
-
+    private boolean moved = false;
 
     /**
      * Runs the client as an application.
@@ -92,7 +82,7 @@ public class TicTacToeClient {
      */
     public TicTacToeClient(String serverAddress) throws Exception {
 
-        initBoard();
+        initFrame();
 
         socket = new Socket(serverAddress, PORT);
         in = new BufferedReader(new InputStreamReader(
@@ -101,127 +91,49 @@ public class TicTacToeClient {
 
     }
 
-    private void initBoard() {
-        JPanel boardPanel = new JPanel();
-        boardPanel.setBackground(Color.black);//границы
-        boardPanel.setLayout(new GridLayout(ONE_LINE, ONE_LINE * 2, 1, 1));
-        for (int i = 0; i < board.length; i++) {
-            board[i] = new Square();
-            boardPanel.add(board[i]);
-        }
+    private void initFrame() {
 
+        JPanel boardPanel = squareUtil.initBoard(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION);
         frame.getContentPane().add(boardPanel, "Center");
-        messageLabel.setSize(350,100);
+        messageLabel.setSize(350, 100);
+        messageLabel.setText("");
         frame.getContentPane().add(messageLabel, BorderLayout.NORTH);
 
     }
 
-    private void loadImg() {
-
-        ImageIcon bl = createImageIcon("plX.png", "Player O");
-        blue = bl;
-
-
-        ImageIcon gr = createImageIcon("head.png", "Player X");
-        green = gr;
-
-        ImageIcon noMove = createImageIcon("noMove.png", "No Move");
-        noMove = noMove;
-
-        ImageIcon kirp = createImageIcon("breakMove.png", "Move after bomb");
-        moveAfterBomb = kirp;
-    }
-
-
-    private void initNewCurSquare() {
-        currentSquare.removeIcon();
-        currentSquareLocation += direction;
-        currentSquare = board[currentSquareLocation];
-        if (!currentSquare.getColor().equals(BREAKED_COLOR)) {
-            currentSquare.setColor(FREE_COLOR);
-        }
-        currentSquare.setIcon(icon);
-        currentSquare.repaint();
-    }
-
-    private void squareIsWall() {
-        Square wallSquare = board[currentSquareLocation + direction];
-        wallSquare.setColor(Color.black);
-        wallSquare.repaint();
-        messageLabel.setText("Здесь неизвестная стена");
-    }
-
-    private void squareIsGranit() {
-        Square granitSquare = board[currentSquareLocation + direction];
-        granitSquare.setColor(Color.red);
-        granitSquare.repaint();
-        messageLabel.setText("Эта стена - невзрываемый гранит.");
-    }
-
-    private void squareIsFreeToGO() {
-        Square freeSquare = board[currentSquareLocation + direction];
-        freeSquare.setColor(FREE_COLOR);
-        freeSquare.repaint();
-        messageLabel.setText("Тут ничего нет");
-    }
-
-    private void squareAfterBrick() {
-        Square emptySquare = board[currentSquareLocation + direction];
-        if (!emptySquare.getColor().equals(FREE_COLOR)){
-            emptySquare.setColor(BREAKED_COLOR);
-            emptySquare.repaint();
-        }
-        messageLabel.setText("Здесь был кирпич");
-
-    }
 
     public void play() throws Exception {
 
-        loadImg();
 
         String response;
         try {
             response = in.readLine();
             if (response.startsWith("WELCOME")) {
                 char mark = response.charAt(8);
-                if (mark == 'X') {
-                    icon = blue;
-                    opponentIcon = green;
-                } else {
-                    icon = green;
-                    opponentIcon = blue;
-                }
-                currentSquareLocation = START_LOCATION;
-                currentSquare = board[currentSquareLocation];
-                currentSquare.setColor(Color.white);
-                currentSquare.setIcon(icon);
-                currentSquare.repaint();
+                squareUtil.setStartIcons(mark);
+                squareUtil.initNewCurSquare(0);
                 frame.setTitle("Player " + mark);
-
             }
 
             bindKeyListener();
 
             //проверка ответа
-
             while (true) {
                 response = in.readLine();
                 if (response != null) {
                     System.out.println(response);
                     if (response.endsWith("Your move") || (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD")))) {
-                        frame.setFocusable(true);
+                        switchOnKeyListener();
                     }
                     if (response.startsWith("CURRENT")) {
                         if (response.startsWith("CURRENT MOVED")) {
-                            initNewCurSquare();
+                            move();
                         } else if (response.startsWith("CURRENT BLACK_KVAD")) {
-                            squareIsWall();
-                            frame.setFocusable(true);
-                            frame.requestFocus();
+                            stuckWithWall();
                         } else if (response.startsWith("CURRENT EMPTY")) {
-                            squareIsFreeToGO();
+                            freeWay();
                         } else if (response.startsWith("CURRENT GRANIT")) {
-                            squareIsGranit();
+                            wallIsUnbreakable();
                         } else if (response.startsWith("CURRENT WON")) {
                             messageLabel.setText("You win!");
                             break;
@@ -229,101 +141,102 @@ public class TicTacToeClient {
                             messageLabel.setText("You lose! Ha-ha");
                             break;
                         } else if (response.startsWith("CURRENT VZORVAL")) {
-                            squareAfterBrick();
+                            bombedWoodenWall();
                         } else if (response.startsWith("CURRENT OTHER WAS HERE")) {
-                            squareAfterBrick();
+                            bombedWoodenWall();
                         }
-                    } else if (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD"))) {
-                        System.out.println("Я запускаюсь");
-                        frame.setFocusable(true);
+                    } else if (response.startsWith("OTHER") && !response.contains("MOVED") && !(response.contains("BLACK_KVAD"))) {
+                        System.out.println("Запускаюсь");
+                        switchOnKeyListener();
                     }
-                }else {
-                    frame.setFocusable(true);
+                } else {
+                    switchOnKeyListener();
                 }
             }
 
-
-
-        } finally {
-            socket.close();
+        } finally{
+            try {
+                socket.close();
+            } catch (IOException e) {
+            }
         }
     }
 
-
-    static class Square extends JPanel {
-
-        JLabel label = new JLabel((Icon) null);
-
-        public Square() {
-            setBackground(Color.gray);// фон всего
-            add(label);
-        }
-
-        public void setIcon(Icon icon) {
-            label.setIcon(icon);
-        }
-
-
-        public void removeIcon() {
-            this.setIcon(null);
-        }
-
-        public void setColor(Color color) {
-            this.setBackground(color);
-        }
-
-        public Color getColor() {
-            return this.getBackground();
-        }
+    private void stuckWithWall() {
+        squareUtil.squareIsWall(direction);
+        messageLabel.setText("Здесь неизвестная стена. Вы можете её взорвать.");
     }
 
-    /**
-     * Returns an ImageIcon, or null if the path was invalid.
-     */
-    protected ImageIcon createImageIcon(String path,
-                                        String description) {
+    private void move() {
+        squareUtil.initNewCurSquare(direction);
+        messageLabel.setText("Можете взорвать клетку или пропустить ход.");
+    }
 
-        java.net.URL imgURL = getClass().getClassLoader().getResource(path);//ClassLoader.getSystemResource(path);
-        System.out.println(imgURL);
-        if (imgURL != null) {
-            //ImageIcon(this.getClass().getResource("/images/filename.png"));
+    private void freeWay() {
+        squareUtil.squareIsFreeToGO(direction);
+        messageLabel.setText("Тут ничего нет");
+    }
 
-            return new ImageIcon(imgURL, description);
-        } else {
-            System.err.println("Couldn't find file: " + path);
-            return null;
-        }
+    private void wallIsUnbreakable() {
+        squareUtil.squareIsGranit(direction);
+        messageLabel.setText("Эта стена - невзрываемый гранит.");
+    }
+
+    private void bombedWoodenWall() {
+        squareUtil.squareAfterBrick(direction);
+        messageLabel.setText("Здесь был кирпич");
+    }
+
+    private void switchOnKeyListener() {
+        frame.setFocusable(true);
+        frame.requestFocus();
     }
 
 
     private void bindKeyListener() {
+
         frame.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 int press = e.getKeyCode();
-                String event;
-
+                String event = null;
                 switch (press) {
                     case KeyEvent.VK_LEFT:
-                        event = "MOVE 1";
-                        System.out.println("LEFT");
-                        direction = -1;
-                        break;
+                        if (moved) {
+                            break;
+                        } else {
+                            event = "MOVE 1";
+                            System.out.println("LEFT");
+                            direction = -1;
+                            break;
+                        }
                     case KeyEvent.VK_RIGHT:
-                        event = "MOVE 3";
-                        System.out.println("RIGHT");
-                        direction = 1;
-                        break;
+                        if (moved) {
+                            break;
+                        } else {
+                            event = "MOVE 3";
+                            System.out.println("RIGHT");
+                            direction = 1;
+                            break;
+                        }
                     case KeyEvent.VK_UP:
-                        event = "MOVE 2";
-                        System.out.println("UP ");
-                        direction = 0 - ONE_LINE;
-                        break;
+                        if (moved) {
+                            break;
+                        } else {
+                            event = "MOVE 2";
+                            System.out.println("UP ");
+                            direction = 0 - ONE_LINE_SQUARES;
+                            break;
+                        }
                     case KeyEvent.VK_DOWN:
-                        event = "MOVE 4";
-                        System.out.println("DOWN");
-                        direction = ONE_LINE;
-                        break;
+                        if (moved) {
+                            break;
+                        } else {
+                            event = "MOVE 4";
+                            System.out.println("DOWN");
+                            direction = ONE_LINE_SQUARES;
+                            break;
+                        }
                     case KeyEvent.VK_ENTER:
                         event = "PROP";
                         System.out.println("ENTER");
@@ -331,7 +244,7 @@ public class TicTacToeClient {
                     case KeyEvent.VK_W:
                         event = "BOMB 2";
                         System.out.println("W");
-                        direction = 0 - ONE_LINE;
+                        direction = 0 - ONE_LINE_SQUARES;
                         break;
                     case KeyEvent.VK_A:
                         event = "BOMB 1";
@@ -341,7 +254,7 @@ public class TicTacToeClient {
                     case KeyEvent.VK_S:
                         event = "BOMB 4";
                         System.out.println("S");
-                        direction = ONE_LINE;
+                        direction = ONE_LINE_SQUARES;
                         break;
                     case KeyEvent.VK_D:
                         event = "BOMB 3";
@@ -351,11 +264,17 @@ public class TicTacToeClient {
                     default:
                         event = "WRONG KEY";
                 }
-                out.println(event);
                 System.out.println(event);
-                if (!event.equals("WRONG KEY")) {
-                    frame.setFocusable(false);
-                }else{
+                if (event != null && !event.equals("WRONG KEY")) {
+                    out.println(event);
+                    if (event.startsWith("MOVE")) {
+                        moved = true;
+                        switchOnKeyListener();
+                    } else {
+                        frame.setFocusable(false);
+                        moved = false;
+                    }
+                } else {
                     messageLabel.setText("Введена неверная клавиша!Попробуй ещё");
                 }
 
@@ -364,10 +283,6 @@ public class TicTacToeClient {
         });
     }
 
-
-    public void actionPerformed() {
-        frame.repaint();
-    }
 
 
 }
