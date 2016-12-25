@@ -58,8 +58,8 @@ public class Game {
             a = OPlayerPlace;
             b = XPlayerPlace;
         }
-        board[XPlayerPlace] = "Path";
-        board[OPlayerPlace] = "Path";
+        board[a] = "Path";
+        board[b] = "Path";
 
         while (b - a >= 5) {
             board[b] = "Path";
