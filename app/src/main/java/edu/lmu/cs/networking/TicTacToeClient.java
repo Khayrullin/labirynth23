@@ -142,8 +142,12 @@ public class TicTacToeClient {
                             break;
                         } else if (response.startsWith("CURRENT VZORVAL")) {
                             bombedWoodenWall();
-                        } else if (response.startsWith("CURRENT OTHER WAS HERE")) {
+                        } else if (response.startsWith("CURRENT VZORVAL KLADKU")) {
                             bombedWoodenWall();
+                        }
+                        else if (response.startsWith("CURRENT OTHER WAS HERE")) {
+                            bombedWoodenWall();
+                            move();
                         }
                     } else if (response.startsWith("OTHER") && !response.contains("MOVED") && !(response.contains("BLACK_KVAD"))) {
                         System.out.println("Запускаюсь");
@@ -154,7 +158,7 @@ public class TicTacToeClient {
                 }
             }
 
-        } finally{
+        } finally {
             try {
                 socket.close();
             } catch (IOException e) {
@@ -282,7 +286,6 @@ public class TicTacToeClient {
             }
         });
     }
-
 
 
 }

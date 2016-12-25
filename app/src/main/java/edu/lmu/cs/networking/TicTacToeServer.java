@@ -38,15 +38,15 @@ public class TicTacToeServer {
             while (true) {
                 Game game = new Game();
                 gamesArchive.add(game);
-                System.out.println("1");
+
                 Game.Player playerX = game.new Player(listener.accept(), 'X', game.getXPlayerPlace());
-                System.out.println("2");
+
                 Game.Player playerO = game.new Player(listener.accept(), 'O', game.getOPlayerPlace());
-                System.out.println("3");
+
                 playerX.setOpponent(playerO);
-                System.out.println("4");
+
                 playerO.setOpponent(playerX);
-                System.out.println("5");
+            
                 game.currentPlayer = playerX;
 
                 playerX.start();

@@ -58,6 +58,8 @@ public class Game {
             a = OPlayerPlace;
             b = XPlayerPlace;
         }
+        board[XPlayerPlace] = "Path";
+        board[OPlayerPlace] = "Path";
 
         while (b - a >= 5) {
             board[b] = "Path";
@@ -114,7 +116,10 @@ public class Game {
      */
     public boolean hasWinner(int direction, Player player) {
         int wantedIndex = getWantedIndex(direction, player);
-        return wantedIndex == player.opponent.getLocation();
+        if ((wantedIndex > board.length - 1 || wantedIndex < 0) || (direction == 1 && ((currentPlayer.getLocation() % 5) == 0))
+                || (direction == 3 && (((currentPlayer.getLocation() + 1) % 5) == 0))) {
+            return wantedIndex == player.opponent.getLocation();
+        } else return false;
     }
 
     /**
@@ -134,11 +139,12 @@ public class Game {
                     board[wantedIndex] = Block.E_BRICK;
                     return true;
                 } else {
-                    if(board[wantedIndex] == Block.E_BRICK){
+                    if (board[wantedIndex] == Block.E_BRICK) {
+                        return true;
+                    } else {
+                        board[wantedIndex] = null;
                         return true;
                     }
-                    board[wantedIndex] = null;
-                    return true;
                 }
             }
         }
@@ -270,7 +276,10 @@ public class Game {
                     output.println("OTHER VZORVAL" + " " + location);
                     break;
                 case 8:
-                    output.println("OTHER WAS HERE"+ " " + location);
+                    output.println("OTHER CURRENT WAS HERE" + " " + location);
+                    break;
+                case 10:
+                    output.println("OTHER VZORVAL KLADKU" + " " + location);
                     break;
 
             }
@@ -303,10 +312,13 @@ public class Game {
                     output.println("CURRENT VZORVAL");
                     break;
                 case 8:
-                    output.println("CURRENT WAS HERE");
+                    output.println("CURRENT OTHER WAS HERE");
                     break;
                 case 9:
                     output.println("CURRENT END");
+                    break;
+                case 10:
+                    output.println("CURRENT VZORVAL KLADKU");
                     break;
             }
         }
@@ -358,15 +370,21 @@ public class Game {
                                 if (bombThatShit(direction, this)) {
 
                                     if (!(wantedIndex > board.length - 1 || wantedIndex < 0)
-                                            && board2[wantedIndex] == Block.BRICK) {
-                                        currentPlayerAction(7);
-                                        currentPlayer.opponent.otherPlayerAction(7, direction);
+                                            && ((board2[wantedIndex] == Block.BRICK) ||
+                                            (board2[wantedIndex] == Block.E_BRICK))) {
+
+                                        if (board2[wantedIndex] == Block.E_BRICK) {
+                                            currentPlayerAction(10);
+                                            currentPlayer.opponent.otherPlayerAction(10, direction);
+                                        } else {
+                                            currentPlayerAction(7);
+                                            currentPlayer.opponent.otherPlayerAction(7, direction);
+                                        }
                                     } else {
                                         currentPlayerAction(3);
                                         currentPlayer.opponent.otherPlayerAction(3, direction);
                                     }
                                     currentPlayer = currentPlayer.opponent;
-                                    System.out.println("1  "+getLocation());
                                     currentPlayerAction(9);
 
                                 } else {
@@ -374,7 +392,6 @@ public class Game {
                                     currentPlayer.opponent.otherPlayerAction(4, direction);
                                     currentPlayer = currentPlayer.opponent;
                                     currentPlayerAction(9);
-                                    System.out.println("2  "+getLocation());
                                 }
                             } else {
                                 currentPlayerAction(5);
@@ -383,7 +400,6 @@ public class Game {
                         } else if (command.startsWith("PROP")) {
                             currentPlayer = currentPlayer.opponent;
                             currentPlayerAction(9);
-                            System.out.println("3  "+getLocation());
                         } else if (command.startsWith("QUIT")) {
                             return;
                         }
