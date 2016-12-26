@@ -197,7 +197,7 @@ public class Game {
     }
 
     /**
-     * The class for the helper threads in this multithreaded server
+     * The c lass for the helper threads in this multithreaded server
      * application.  A Player is identified by a character mark
      * which is either 'X' or 'O'.  For communication with the
      * client the player has a socket with its input and output
