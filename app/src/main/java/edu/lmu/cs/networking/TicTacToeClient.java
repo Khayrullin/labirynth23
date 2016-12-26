@@ -96,7 +96,6 @@ public class TicTacToeClient {
         JPanel boardPanel = squareUtil.initBoard(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION);
         frame.getContentPane().add(boardPanel, "Center");
         messageLabel.setSize(350, 100);
-        messageLabel.setText("");
         frame.getContentPane().add(messageLabel, BorderLayout.NORTH);
 
     }
@@ -115,42 +114,52 @@ public class TicTacToeClient {
                 frame.setTitle("Player " + mark);
             }
 
+            frame.setFocusable(false);
             bindKeyListener();
 
+            response = in.readLine();
+
+            while (response.startsWith("MESSAGE")) {
+                response = in.readLine();
+                if (response.endsWith("Your move")) {
+                    switchOnKeyListener();
+                    messageLabel.setText("Ваш ход");
+                    break;
+                } else {
+                    messageLabel.setText("Ход противника");
+                }
+            }
             //проверка ответа
             while (true) {
                 response = in.readLine();
-                if (response != null) {
-                    System.out.println(response);
-                    if (response.endsWith("Your move") || (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD")))) {
-                        switchOnKeyListener();
+
+                System.out.println(response);
+
+                if (response.startsWith("CURRENT")) {
+                    if (response.startsWith("CURRENT MOVED")) {
+                        move();
+                    } else if (response.startsWith("CURRENT BLACK_KVAD")) {
+                        stuckWithWall();
+                    } else if (response.startsWith("CURRENT EMPTY")) {
+                        freeWay();
+                    } else if (response.startsWith("CURRENT GRANIT")) {
+                        wallIsUnbreakable();
+                    } else if (response.startsWith("CURRENT WON")) {
+                        messageLabel.setText("You win!");
+                        break;
+                    } else if (response.startsWith("CURRENT LOSE")) {
+                        messageLabel.setText("You lose! Ha-ha");
+                        break;
+                    } else if (response.startsWith("CURRENT VZORVAL")) {
+                        bombedWoodenWall();
+                    } else if (response.startsWith("CURRENT WAS HERE")) {
+                        bombedWoodenWall();
                     }
-                    if (response.startsWith("CURRENT")) {
-                        if (response.startsWith("CURRENT MOVED")) {
-                            move();
-                        } else if (response.startsWith("CURRENT BLACK_KVAD")) {
-                            stuckWithWall();
-                        } else if (response.startsWith("CURRENT EMPTY")) {
-                            freeWay();
-                        } else if (response.startsWith("CURRENT GRANIT")) {
-                            wallIsUnbreakable();
-                        } else if (response.startsWith("CURRENT WON")) {
-                            messageLabel.setText("You win!");
-                            break;
-                        } else if (response.startsWith("CURRENT LOSE")) {
-                            messageLabel.setText("You lose! Ha-ha");
-                            break;
-                        } else if (response.startsWith("CURRENT VZORVAL")) {
-                            bombedWoodenWall();
-                        } else if (response.startsWith("CURRENT OTHER WAS HERE")) {
-                            bombedWoodenWall();
-                        }
-                    } else if (response.startsWith("OTHER") && !response.contains("MOVED") && !(response.contains("BLACK_KVAD"))) {
-                        System.out.println("Запускаюсь");
-                        switchOnKeyListener();
-                    }
-                } else {
+                } else if (response.startsWith("OTHER") && !response.contains("MOVED") && !(response.contains("BLACK_KVAD"))) {
+                    System.out.println("Запускаюсь");
                     switchOnKeyListener();
+                } else if (response.startsWith("MESSAGE ?")) {
+                    messageLabel.setText("твоя ошибка дура тупая");
                 }
             }
 
