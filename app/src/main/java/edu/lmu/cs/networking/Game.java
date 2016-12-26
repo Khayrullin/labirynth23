@@ -118,8 +118,8 @@ public class Game {
         int wantedIndex = getWantedIndex(direction, player);
         if ((wantedIndex > board.length - 1 || wantedIndex < 0) || (direction == 1 && ((currentPlayer.getLocation() % 5) == 0))
                 || (direction == 3 && (((currentPlayer.getLocation() + 1) % 5) == 0))) {
-            return wantedIndex == player.opponent.getLocation();
-        } else return false;
+            return false;
+        } else return wantedIndex == player.opponent.getLocation();
     }
 
     /**
