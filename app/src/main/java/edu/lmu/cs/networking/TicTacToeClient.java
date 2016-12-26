@@ -120,15 +120,19 @@ public class TicTacToeClient {
             response = in.readLine();
 
             while (response.startsWith("MESSAGE")) {
-                response = in.readLine();
-                if (response.endsWith("Your move")) {
-                    switchOnKeyListener();
-                    messageLabel.setText("Ваш ход");
-                    break;
-                } else {
-                    messageLabel.setText("Ход противника");
+                if (response.endsWith("All players connected")) {
+                    response = in.readLine();
+                    System.out.println(response);
+                    if (response.endsWith("Your move")) {
+                        switchOnKeyListener();
+                        messageLabel.setText("Ваш ход");
+                        break;
+                    } else {
+                        messageLabel.setText("Ход противника");
+                    }
                 }
             }
+            
             //проверка ответа
             while (true) {
                 response = in.readLine();
@@ -164,7 +168,7 @@ public class TicTacToeClient {
                 }
             }
 
-        } finally{
+        } finally {
             try {
                 socket.close();
             } catch (IOException e) {
@@ -292,7 +296,6 @@ public class TicTacToeClient {
             }
         });
     }
-
 
 
 }
