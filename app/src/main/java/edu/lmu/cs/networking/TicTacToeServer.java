@@ -13,20 +13,21 @@ import java.util.List;
  * client and server, I made a TTTP (tic tac toe protocol) which is totally
  * plain text, so you can test the game with Telnet (always a good idea.)
  * The strings that are sent in TTTP are:
- *
- *  Client -> Server           Server -> Client
- *  ----------------           ----------------
- *  MOVE <n>  (1 <= n <= 4)    WELCOME <char>  (char in {X, O})
- *  BOMB <n> (1 <= n <= 4)     CURRENT (empty / Granit /shodil / cherny kvadrat/ won/ lose)
- *  QUIT                       OTHER (empty / Granit /shodil / cherny kvadrat/ won/ lose)
- *  PROP                       MESSAGE <text>
- *
+ * <p>
+ * Client -> Server           Server -> Client
+ * ----------------           ----------------
+ * MOVE <n>  (1 <= n <= 4)    WELCOME <char>  (char in {X, O})
+ * BOMB <n> (1 <= n <= 4)     CURRENT (empty / Granit /shodil / cherny kvadrat/ won/ lose)
+ * QUIT                       OTHER (empty / Granit /shodil / cherny kvadrat/ won/ lose)
+ * PROP                       MESSAGE <text>
+ * <p>
  * A second change is that it allows an unlimited number of pairs of
  * players to play.
  */
 public class TicTacToeServer {
 
-    public static volatile List<Game> gamesArchive = new ArrayList<Game>(){};
+    public static volatile List<Game> gamesArchive = new ArrayList<Game>() {
+    };
 
     /**
      * Runs the application. Pairs up clients that connect.
@@ -38,15 +39,15 @@ public class TicTacToeServer {
             while (true) {
                 Game game = new Game();
                 gamesArchive.add(game);
-                System.out.println("1");
+
                 Game.Player playerX = game.new Player(listener.accept(), 'X', game.getXPlayerPlace());
-                System.out.println("2");
+
                 Game.Player playerO = game.new Player(listener.accept(), 'O', game.getOPlayerPlace());
-                System.out.println("3");
+
                 playerX.setOpponent(playerO);
-                System.out.println("4");
+
                 playerO.setOpponent(playerX);
-                System.out.println("5");
+
                 game.currentPlayer = playerX;
 
                 playerX.start();
