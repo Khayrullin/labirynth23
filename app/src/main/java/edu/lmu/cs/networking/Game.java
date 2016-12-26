@@ -278,6 +278,9 @@ public class Game {
                 case 8:
                     output.println("OTHER CURRENT WAS HERE" + " " + location);
                     break;
+                case 9:
+                    output.println("OTHER END");
+                    break;
                 case 10:
                     output.println("OTHER VZORVAL KLADKU" + " " + location);
                     break;
@@ -400,6 +403,7 @@ public class Game {
                         } else if (command.startsWith("PROP")) {
                             currentPlayer = currentPlayer.opponent;
                             currentPlayerAction(9);
+                            currentPlayer.opponent.otherPlayerAction(9,0);
                         } else if (command.startsWith("QUIT")) {
                             return;
                         }

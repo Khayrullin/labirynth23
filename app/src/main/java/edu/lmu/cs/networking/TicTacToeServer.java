@@ -46,7 +46,7 @@ public class TicTacToeServer {
 
                 playerX.setOpponent(playerO);
 
-                
+
                 playerO.setOpponent(playerX);
 
 
