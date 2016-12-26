@@ -154,12 +154,13 @@ public class TicTacToeClient {
                         bombedWoodenWall();
                     } else if (response.startsWith("CURRENT WAS HERE")) {
                         bombedWoodenWall();
+                        move();
                     }
                 } else if (response.startsWith("OTHER") && !response.contains("MOVED") && !(response.contains("BLACK_KVAD"))) {
                     System.out.println("Запускаюсь");
                     switchOnKeyListener();
                 } else if (response.startsWith("MESSAGE ?")) {
-                    messageLabel.setText("твоя ошибка дура тупая");
+                    messageLabel.setText("твоя ошибка");
                 }
             }
 
