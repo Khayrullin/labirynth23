@@ -1,24 +1,16 @@
 package edu.lmu.cs.networking;
 
+import edu.lmu.cs.utils.SquareUtil;
+
+import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
-import com.meo.SMSSender;
-import edu.lmu.cs.utils.SquareUtil;
-
-import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
 
 /**
  * A client for the TicTacToe game, modified and extended from the
@@ -108,6 +100,7 @@ public class TicTacToeClient {
         String response;
         try {
             response = in.readLine();
+
             if (response.startsWith("WELCOME")) {
                 char mark = response.charAt(8);
                 squareUtil.setStartIcons(mark);
@@ -116,15 +109,31 @@ public class TicTacToeClient {
             }
 
             bindKeyListener();
+            frame.setFocusable(false);
 
+            response = in.readLine();
+            System.out.println(response);
+
+            while (response.startsWith("MESSAGE")) {
+                response = in.readLine();
+                if (response.endsWith("All players connected")) {
+                    System.out.println(response);
+                    response = in.readLine();
+                    System.out.println(response);
+                    if (response.endsWith("Your move")) {
+                        switchOnKeyListener();
+                        messageLabel.setText("Ваш ход");
+                        break;
+                    } else {
+                        messageLabel.setText("Ход противника");
+                    }
+                }
+            }
             //проверка ответа
             while (true) {
                 response = in.readLine();
                 if (response != null) {
                     System.out.println(response);
-                    if (response.endsWith("Your move") || (response.startsWith("OTHER") && (!response.startsWith("OTHER BLACK_KVAD")))) {
-                        switchOnKeyListener();
-                    }
                     if (response.startsWith("CURRENT")) {
                         if (response.startsWith("CURRENT MOVED")) {
                             move();
@@ -136,28 +145,30 @@ public class TicTacToeClient {
                             wallIsUnbreakable();
                         } else if (response.startsWith("CURRENT WON")) {
                             messageLabel.setText("You win!");
-                            break;
+                            endOfGame();
                         } else if (response.startsWith("CURRENT LOSE")) {
                             messageLabel.setText("You lose! Ha-ha");
-                            break;
+                            endOfGame();
                         } else if (response.startsWith("CURRENT VZORVAL")) {
                             bombedWoodenWall();
                         } else if (response.startsWith("CURRENT VZORVAL KLADKU")) {
-                            bombedWoodenWall(); 
-                        }
-                        else if (response.startsWith("CURRENT OTHER WAS HERE")) {
+                            bombedWoodenWall();
+                        } else if (response.startsWith("CURRENT END")) {
+                            messageLabel.setText("Ход противника");
+                        } else if (response.startsWith("CURRENT OTHER WAS HERE")) {
                             bombedWoodenWall();
                             move();
                         }
-                    } else if (response.startsWith("OTHER") && !response.contains("MOVED") && !(response.contains("BLACK_KVAD"))) {
-                        System.out.println("Запускаюсь");
+                    } else if (response.startsWith("OTHER END")) {
+                        messageLabel.setText("Ваш ход");
                         switchOnKeyListener();
+                    } else if (response.startsWith("MESSAGE ?")) {
+                        messageLabel.setText("Дождитесь вашего хода.");
                     }
                 } else {
                     switchOnKeyListener();
                 }
             }
-
         } finally {
             try {
                 socket.close();
@@ -194,6 +205,25 @@ public class TicTacToeClient {
     private void switchOnKeyListener() {
         frame.setFocusable(true);
         frame.requestFocus();
+    }
+
+    private boolean wantsToPlayAgain() {
+        int response = JOptionPane.showConfirmDialog(frame,
+                "Want to play again?",
+                "DICK is Fun Fun Fun",
+                JOptionPane.YES_NO_OPTION);
+        frame.dispose();
+        return response == JOptionPane.YES_OPTION;
+    }
+
+    private String endOfGame() {
+        String response;
+        if (wantsToPlayAgain()) {
+            response = "YES";
+        } else {
+            response = "NO";
+        }
+        return response;
     }
 
 
@@ -269,7 +299,7 @@ public class TicTacToeClient {
                         event = "WRONG KEY";
                 }
                 System.out.println(event);
-                if (event != null && !event.equals("WRONG KEY")) {
+                if (event != null && !event.equals("WRONG KEY") && !(squareUtil.outOfBorder(direction))) {
                     out.println(event);
                     if (event.startsWith("MOVE")) {
                         moved = true;
@@ -280,6 +310,7 @@ public class TicTacToeClient {
                     }
                 } else {
                     messageLabel.setText("Введена неверная клавиша!Попробуй ещё");
+                    direction = 0;
                 }
 
 

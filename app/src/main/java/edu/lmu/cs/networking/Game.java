@@ -133,8 +133,7 @@ public class Game {
                 || (direction == 3 && (((loc + 1) % 5) == 0))) {
             return false;
         } else {
-            if (player == currentPlayer &&
-                    board[wantedIndex] != Block.IMMORTAL && wantedIndex != player.opponent.getLocation()) {
+            if (player == currentPlayer && board[wantedIndex] != Block.IMMORTAL && wantedIndex != player.opponent.getLocation()) {
                 if (board[wantedIndex] == Block.BRICK) {
                     board[wantedIndex] = Block.E_BRICK;
                     return true;
@@ -337,6 +336,9 @@ public class Game {
                 // Tell the first player that it is her turn.
                 if (mark == 'X') {
                     output.println("MESSAGE Your move");
+                } else {
+                    //ход другого игрока
+                    output.println("MESSAGE Other move");
                 }
 
                 // Repeatedly get commands from the client and process them.
@@ -387,23 +389,24 @@ public class Game {
                                         currentPlayerAction(3);
                                         currentPlayer.opponent.otherPlayerAction(3, direction);
                                     }
-                                    currentPlayer = currentPlayer.opponent;
                                     currentPlayerAction(9);
-
+                                    currentPlayer.opponent.otherPlayerAction(9, 0);
+                                    currentPlayer = currentPlayer.opponent;
                                 } else {
                                     currentPlayerAction(4);
                                     currentPlayer.opponent.otherPlayerAction(4, direction);
-                                    currentPlayer = currentPlayer.opponent;
                                     currentPlayerAction(9);
+                                    currentPlayer.opponent.otherPlayerAction(9, 0);
+                                    currentPlayer = currentPlayer.opponent;
                                 }
                             } else {
                                 currentPlayerAction(5);
-                                currentPlayer.opponent.otherPlayerAction(6, direction);
+                                currentPlayer.opponent.currentPlayerAction(6);
                             }
                         } else if (command.startsWith("PROP")) {
-                            currentPlayer = currentPlayer.opponent;
                             currentPlayerAction(9);
                             currentPlayer.opponent.otherPlayerAction(9,0);
+                            currentPlayer = currentPlayer.opponent;
                         } else if (command.startsWith("QUIT")) {
                             return;
                         }

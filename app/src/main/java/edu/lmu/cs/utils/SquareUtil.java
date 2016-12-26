@@ -19,7 +19,7 @@ public class SquareUtil {
 
     private final Color BREAKED_COLOR = Color.pink;
     private final Color FREE_COLOR = Color.white;
-
+    private int ONE_LINE_SQUARES;
     private ImageIcon icon;
     private ImageIcon opponentIcon;
 
@@ -58,6 +58,7 @@ public class SquareUtil {
 
 
     public JPanel initBoard(int oneLineSquares,int boardSize,int startLocation){
+        ONE_LINE_SQUARES = oneLineSquares;
         board = new Square[boardSize];
         JPanel boardPanel = new JPanel();
         boardPanel.setBackground(Color.black);//границы
@@ -110,6 +111,17 @@ public class SquareUtil {
             emptySquare.repaint();
         }
 
+    }
+
+    public boolean outOfBorder(int direction) {
+        System.out.println(currentSquareLocation);
+        for (int i = 1; i < ONE_LINE_SQUARES; i++) {
+            if (((currentSquareLocation == (ONE_LINE_SQUARES * i - 1)) && (direction == 1))
+                    || ((currentSquareLocation == ONE_LINE_SQUARES * i) && (direction == -1))) {
+                return true;
+            }
+        }
+        return ((currentSquareLocation + direction) >= ONE_LINE_SQUARES * ONE_LINE_SQUARES || (currentSquareLocation + direction) < 0);
     }
 
     private static class Square extends JPanel {
