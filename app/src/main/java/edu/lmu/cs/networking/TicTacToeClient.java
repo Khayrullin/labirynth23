@@ -118,12 +118,15 @@ public class TicTacToeClient {
             bindKeyListener();
 
             response = in.readLine();
+            System.out.println(response);
 
             while (response.startsWith("MESSAGE")) {
-                if (response.endsWith("All players connected")) {
+
+                if (response.endsWith(" All players connected")) {
+                    System.out.println(response);
                     response = in.readLine();
                     System.out.println(response);
-                    if (response.endsWith("Your move")) {
+                    if (response.endsWith(" Your move")) {
                         switchOnKeyListener();
                         messageLabel.setText("Ваш ход");
                         break;
@@ -132,11 +135,10 @@ public class TicTacToeClient {
                     }
                 }
             }
-            
+
             //проверка ответа
             while (true) {
                 response = in.readLine();
-
                 System.out.println(response);
 
                 if (response.startsWith("CURRENT")) {
