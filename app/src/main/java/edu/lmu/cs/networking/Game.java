@@ -205,7 +205,7 @@ public class Game {
      * reader and a writer.
      */
     class Player extends Thread {
-        char mark;
+        char  mark;
         Player opponent;
         Socket socket;
         BufferedReader input;

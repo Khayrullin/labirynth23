@@ -48,6 +48,7 @@ public class TicTacToeServer {
 
                 playerO.setOpponent(playerX);
 
+
                 game.currentPlayer = playerX;
 
                 playerX.start();
