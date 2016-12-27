@@ -61,7 +61,7 @@ public class SquareUtil {
             board[i] = new Square();
             boardPanel.add(board[i]);
         }
-
+        boardPanel.repaint();
         return boardPanel;
     }
 
@@ -81,10 +81,16 @@ public class SquareUtil {
         currentSquare.repaint();
     }
 
-    public  void squareIsWall(int direction) {
+    public boolean squareIsWall(int direction) {
         Square wallSquare = board[currentSquareLocation + direction];
-        wallSquare.setColor(Color.black);
-        wallSquare.repaint();
+        if (!wallSquare.getColor().equals(Color.red)) {
+            wallSquare.setColor(Color.black);
+            wallSquare.repaint();
+        } else {
+            //square was bombed yet.
+            return false;
+        }
+        return true;
     }
 
     public  void squareIsGranit(int direction) {

@@ -10,9 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ConnectException;
 import java.net.Socket;
-import java.net.SocketException;
 
 /**
  * A client for the TicTacToe game, modified and extended from the
@@ -45,8 +43,8 @@ public class TicTacToeClient {
     private boolean isCurrentMessageLabel;
 
 
-    private SquareUtil squareUtil = new SquareUtil(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION, false);
-    private SquareUtil opponentSquareUtil = new SquareUtil(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION, true);
+    private SquareUtil squareUtil;
+    private SquareUtil opponentSquareUtil;
     private SquareUtil currentSquareUtil;
 
     private static int PORT = 8901;
@@ -66,17 +64,6 @@ public class TicTacToeClient {
         //SMSSender.smsSend("Game started","79047640086");
         String serverAddress = (args.length == 0) ? "localhost" : args[1];
         TicTacToeClient client = new TicTacToeClient(serverAddress);
-
-        client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        client.frame.setSize(350, 450);
-        client.frame.setVisible(true);
-        client.frame.setResizable(false);
-
-        client.frameOpponent.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        client.frameOpponent.setSize(350, 450);
-        client.frameOpponent.setVisible(true);
-        client.frameOpponent.setResizable(false);
-
         client.play();
 
     }
@@ -88,7 +75,6 @@ public class TicTacToeClient {
      */
     public TicTacToeClient(String serverAddress) {
 
-        initFrame();
         try {
             socket = new Socket(serverAddress, PORT);
             in = new BufferedReader(new InputStreamReader(
@@ -98,10 +84,14 @@ public class TicTacToeClient {
             JOptionPane.showMessageDialog(frame, "Не удалось подключиться к серверу. Сервер недоступен");
             System.exit(-1);
         }
+
+        initFrame();
     }
 
 
     private void initFrame() {
+        squareUtil = new SquareUtil(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION, false);
+        opponentSquareUtil = new SquareUtil(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION, true);
 
         JPanel boardPanel = squareUtil.initBoard();
         JPanel boardPanelOpponent = opponentSquareUtil.initBoard();
@@ -114,8 +104,21 @@ public class TicTacToeClient {
 
         frameOpponent.getContentPane().add(boardPanelOpponent, "Center");
 
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(350, 450);
+        frame.setVisible(true);
+        frame.setResizable(false);
+
+        frameOpponent.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frameOpponent.setSize(350, 450);
+        frameOpponent.setVisible(true);
+        frameOpponent.setResizable(false);
     }
 
+    private void clearFrame() {
+        frame.getContentPane().removeAll();
+    }
 
     public void play() {
 
@@ -231,9 +234,14 @@ public class TicTacToeClient {
     }
 
     private void stuckWithWall() {
-        currentSquareUtil.squareIsWall(direction);
+        boolean wasNotBombed = currentSquareUtil.squareIsWall(direction);
         if (isCurrentMessageLabel) {
-            messageLabel.setText("Здесь неизвестная стена. Вы можете её взорвать.");
+            if (wasNotBombed) {
+                messageLabel.setText("Здесь неизвестная стена. Вы можете её взорвать.");
+            } else {
+                messageLabel.setText("Эта стена - невзрываемый гранит.Повторите ход");
+                moved = false;
+            }
         }
     }
 
@@ -281,6 +289,7 @@ public class TicTacToeClient {
 
     private void endOfGame() {
         if (wantsToPlayAgain()) {
+            clearFrame();
             initFrame();
             play();
         } else {
