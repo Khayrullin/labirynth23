@@ -36,6 +36,8 @@ public class TicTacToeClient {
 
 
     private JFrame frame = new JFrame("Bombermans");
+    private JFrame frameOpponent = new JFrame("Opponent");
+
     private JLabel messageLabel = new JLabel("");
 
 
@@ -64,6 +66,12 @@ public class TicTacToeClient {
         client.frame.setSize(350, 450);
         client.frame.setVisible(true);
         client.frame.setResizable(false);
+
+        client.frameOpponent.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        client.frameOpponent.setSize(350, 450);
+        client.frameOpponent.setVisible(true);
+        client.frameOpponent.setResizable(false);
+
         client.play();
     }
 
@@ -85,11 +93,15 @@ public class TicTacToeClient {
 
     private void initFrame() {
 
-        JPanel boardPanel = squareUtil.initBoard(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION);
+        JPanel boardPanel = squareUtil.initBoard(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION, true);
+        JPanel boardPanelOpponent = squareUtil.initBoard(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION, false);
+
         frame.getContentPane().add(boardPanel, "Center");
         messageLabel.setSize(350, 100);
         messageLabel.setText("");
         frame.getContentPane().add(messageLabel, BorderLayout.NORTH);
+
+        frameOpponent.getContentPane().add(boardPanelOpponent, "Center");
 
     }
 
@@ -104,7 +116,8 @@ public class TicTacToeClient {
             if (response.startsWith("WELCOME")) {
                 char mark = response.charAt(8);
                 squareUtil.setStartIcons(mark);
-                squareUtil.initNewCurSquare(0);
+                squareUtil.initNewCurSquare(0, true);
+                squareUtil.initNewCurSquare(0, false);
                 frame.setTitle("Player " + mark);
             }
 
@@ -135,27 +148,27 @@ public class TicTacToeClient {
                 if (response != null) {
                     System.out.println(response);
                     if (response.startsWith("CURRENT")) {
-                        if (response.startsWith("CURRENT MOVED")) {
+                        if (response.endsWith("MOVED")) {
                             move();
-                        } else if (response.startsWith("CURRENT BLACK_KVAD")) {
+                        } else if (response.endsWith("BLACK_KVAD")) {
                             stuckWithWall();
-                        } else if (response.startsWith("CURRENT EMPTY")) {
+                        } else if (response.endsWith("EMPTY")) {
                             freeWay();
-                        } else if (response.startsWith("CURRENT GRANIT")) {
+                        } else if (response.endsWith("GRANIT")) {
                             wallIsUnbreakable();
-                        } else if (response.startsWith("CURRENT WON")) {
+                        } else if (response.endsWith("WON")) {
                             messageLabel.setText("You win!");
                             endOfGame();
-                        } else if (response.startsWith("CURRENT LOSE")) {
+                        } else if (response.endsWith("LOSE")) {
                             messageLabel.setText("You lose! Ha-ha");
                             endOfGame();
-                        } else if (response.startsWith("CURRENT VZORVAL")) {
+                        } else if (response.endsWith("VZORVAL")) {
                             bombedWoodenWall();
-                        } else if (response.startsWith("CURRENT VZORVAL KLADKU")) {
+                        } else if (response.endsWith("VZORVAL KLADKU")) {
                             bombedWoodenWall();
-                        } else if (response.startsWith("CURRENT END")) {
+                        } else if (response.endsWith("END")) {
                             messageLabel.setText("Ход противника");
-                        } else if (response.startsWith("CURRENT OTHER WAS HERE")) {
+                        } else if (response.endsWith("OTHER WAS HERE")) {
                             bombedWoodenWall();
                             move();
                         }
@@ -183,7 +196,7 @@ public class TicTacToeClient {
     }
 
     private void move() {
-        squareUtil.initNewCurSquare(direction);
+        squareUtil.initNewCurSquare(direction, true);
         messageLabel.setText("Можете взорвать клетку или пропустить ход.");
     }
 
