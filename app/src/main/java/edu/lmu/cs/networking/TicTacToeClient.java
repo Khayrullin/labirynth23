@@ -40,9 +40,12 @@ public class TicTacToeClient {
 
     private JLabel messageLabel = new JLabel("");
 
+    private boolean isCurrentMessageLabel;
 
-    private SquareUtil squareUtil = SquareUtil.getInstance();
 
+    private SquareUtil squareUtil = new SquareUtil(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION, false);
+    private SquareUtil opponentSquareUtil = new SquareUtil(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION, true);
+    private SquareUtil currentSquareUtil;
 
     private static int PORT = 8901;
     private Socket socket;
@@ -52,7 +55,6 @@ public class TicTacToeClient {
 
     private int direction;
 
-    private boolean ingame = true;
     private boolean moved = false;
 
     /**
@@ -93,10 +95,11 @@ public class TicTacToeClient {
 
     private void initFrame() {
 
-        JPanel boardPanel = squareUtil.initBoard(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION, true);
-        JPanel boardPanelOpponent = squareUtil.initBoard(ONE_LINE_SQUARES, BOARD_SIZE, START_LOCATION, false);
+        JPanel boardPanel = squareUtil.initBoard();
+        JPanel boardPanelOpponent = opponentSquareUtil.initBoard();
 
         frame.getContentPane().add(boardPanel, "Center");
+
         messageLabel.setSize(350, 100);
         messageLabel.setText("");
         frame.getContentPane().add(messageLabel, BorderLayout.NORTH);
@@ -116,8 +119,9 @@ public class TicTacToeClient {
             if (response.startsWith("WELCOME")) {
                 char mark = response.charAt(8);
                 squareUtil.setStartIcons(mark);
-                squareUtil.initNewCurSquare(0, true);
-                squareUtil.initNewCurSquare(0, false);
+                squareUtil.initNewCurSquare(0);
+                opponentSquareUtil.setStartIcons(mark);
+                opponentSquareUtil.initNewCurSquare(0);
                 frame.setTitle("Player " + mark);
             }
 
@@ -133,13 +137,16 @@ public class TicTacToeClient {
                     System.out.println(response);
                     response = in.readLine();
                     System.out.println(response);
-                    if (response.endsWith("Your move")) {
-                        switchOnKeyListener();
-                        messageLabel.setText("Ваш ход");
+                    if (response.endsWith("Your move") || response.endsWith("Other move")) {
+                        if (response.endsWith("Your move")) {
+                            switchOnKeyListener();
+                            messageLabel.setText("Ваш ход");
+                        } else {
+                            messageLabel.setText("Ход противника");
+                        }
                         break;
-                    } else {
-                        messageLabel.setText("Ход противника");
                     }
+
                 }
             }
             //проверка ответа
@@ -148,71 +155,106 @@ public class TicTacToeClient {
                 if (response != null) {
                     System.out.println(response);
                     if (response.startsWith("CURRENT")) {
-                        if (response.endsWith("MOVED")) {
-                            move();
-                        } else if (response.endsWith("BLACK_KVAD")) {
-                            stuckWithWall();
-                        } else if (response.endsWith("EMPTY")) {
-                            freeWay();
-                        } else if (response.endsWith("GRANIT")) {
-                            wallIsUnbreakable();
-                        } else if (response.endsWith("WON")) {
-                            messageLabel.setText("You win!");
-                            endOfGame();
-                        } else if (response.endsWith("LOSE")) {
-                            messageLabel.setText("You lose! Ha-ha");
-                            endOfGame();
-                        } else if (response.endsWith("VZORVAL")) {
-                            bombedWoodenWall();
-                        } else if (response.endsWith("VZORVAL KLADKU")) {
-                            bombedWoodenWall();
-                        } else if (response.endsWith("END")) {
+                        currentSquareUtil = squareUtil;
+                        isCurrentMessageLabel = true;
+                        if (response.endsWith("END")) {
                             messageLabel.setText("Ход противника");
-                        } else if (response.endsWith("OTHER WAS HERE")) {
-                            bombedWoodenWall();
-                            move();
                         }
-                    } else if (response.startsWith("OTHER END")) {
-                        messageLabel.setText("Ваш ход");
-                        switchOnKeyListener();
+                    } else if (response.startsWith("OTHER")) {
+
+                        char opponentDirection = response.charAt(6);
+
+                        direction = setOpponentDirection(opponentDirection);
+
+                        currentSquareUtil = opponentSquareUtil;
+                        isCurrentMessageLabel = false;
+
+                        if (response.endsWith("END")) {
+                            System.out.println("Ee hjwr");
+                            currentSquareUtil = squareUtil;
+                            isCurrentMessageLabel = true;
+                            messageLabel.setText("Ваш ход");
+                            switchOnKeyListener();
+                        }
+
                     } else if (response.startsWith("MESSAGE ?")) {
-                        messageLabel.setText("Дождитесь вашего хода.");
+                        if (isCurrentMessageLabel) {
+                            messageLabel.setText("Дождитесь вашего хода.");
+                        }
                     }
+
+                    if (response.endsWith("MOVED")) {
+                        move();
+                    } else if (response.endsWith("BLACK_KVAD")) {
+                        stuckWithWall();
+                    } else if (response.endsWith("EMPTY")) {
+                        freeWay();
+                    } else if (response.endsWith("GRANIT")) {
+                        wallIsUnbreakable();
+                    } else if (response.endsWith("WON")) {
+                        messageLabel.setText("You win!");
+                        endOfGame();
+                    } else if (response.endsWith("LOSE")) {
+                        messageLabel.setText("You lose! Ha-ha");
+                        endOfGame();
+                    } else if (response.endsWith("VZORVAL")) {
+                        bombedWoodenWall();
+                    } else if (response.endsWith("VZORVAL KLADKU")) {
+                        bombedWoodenWall();
+                    } else if (response.endsWith("OTHER WAS HERE")) {
+                        bombedWoodenWall();
+                        move();
+                    }
+
                 } else {
                     switchOnKeyListener();
                 }
             }
-        } finally {
+        } finally
+
+        {
             try {
                 socket.close();
             } catch (IOException e) {
             }
         }
+
     }
 
     private void stuckWithWall() {
-        squareUtil.squareIsWall(direction);
-        messageLabel.setText("Здесь неизвестная стена. Вы можете её взорвать.");
+        currentSquareUtil.squareIsWall(direction);
+        if (isCurrentMessageLabel) {
+            messageLabel.setText("Здесь неизвестная стена. Вы можете её взорвать.");
+        }
     }
 
     private void move() {
-        squareUtil.initNewCurSquare(direction, true);
-        messageLabel.setText("Можете взорвать клетку или пропустить ход.");
+        currentSquareUtil.initNewCurSquare(direction);
+        if (isCurrentMessageLabel) {
+            messageLabel.setText("Можете взорвать клетку или пропустить ход.");
+        }
+
     }
 
     private void freeWay() {
-        squareUtil.squareIsFreeToGO(direction);
-        messageLabel.setText("Тут ничего нет");
+        currentSquareUtil.squareIsFreeToGO(direction);
+        if (isCurrentMessageLabel) {
+            messageLabel.setText("Тут ничего нет");
+        }
     }
 
     private void wallIsUnbreakable() {
-        squareUtil.squareIsGranit(direction);
-        messageLabel.setText("Эта стена - невзрываемый гранит.");
+        currentSquareUtil.squareIsGranit(direction);
+        if (isCurrentMessageLabel) {
+            messageLabel.setText("Эта стена - невзрываемый гранит.");
+        }
     }
 
     private void bombedWoodenWall() {
-        squareUtil.squareAfterBrick(direction);
-        messageLabel.setText("Здесь был кирпич");
+        currentSquareUtil.squareAfterBrick(direction);
+        if (isCurrentMessageLabel) {
+            messageLabel.setText("Здесь был кирпич");
+        }
     }
 
     private void switchOnKeyListener() {
@@ -223,9 +265,10 @@ public class TicTacToeClient {
     private boolean wantsToPlayAgain() {
         int response = JOptionPane.showConfirmDialog(frame,
                 "Want to play again?",
-                "DICK is Fun Fun Fun",
+                "Bombing is Fun Fun Fun",
                 JOptionPane.YES_NO_OPTION);
         frame.dispose();
+        frameOpponent.dispose();
         return response == JOptionPane.YES_OPTION;
     }
 
@@ -239,7 +282,19 @@ public class TicTacToeClient {
         return response;
     }
 
-
+    private int setOpponentDirection(char direction) {
+        switch (direction) {
+            case '1':
+                return -1;
+            case '2':
+                return (0 - ONE_LINE_SQUARES);
+            case '3':
+                return 1;
+            case '4':
+                return ONE_LINE_SQUARES;
+        }
+        return 0;
+    }
     private void bindKeyListener() {
 
         frame.addKeyListener(new KeyAdapter() {

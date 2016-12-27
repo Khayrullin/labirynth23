@@ -12,28 +12,32 @@ import static java.awt.Color.green;
 public class SquareUtil {
 
     private Square[] board;
-    private Square[] boardForOpponent;
 
     private int currentSquareLocation;
     private Square currentSquare;
 
-    private int currentSquareLocationOpponent;
-    private Square currentSquareOpponent;
-
     private final Color BREAKED_COLOR = Color.pink;
     private final Color FREE_COLOR = Color.white;
     private int ONE_LINE_SQUARES;
+
+    private boolean opponent;
+
     private ImageIcon icon;
-    private ImageIcon opponentIcon;
 
     private ImageIcon blue;
     private ImageIcon green;
 
-   /* private  ImageIcon noMove;
-    private ImageIcon moveAfterBomb;
-*/
+
+    public SquareUtil(int oneLineSquares, int boardSize, int startLocation, boolean ifOpponent) {
+        ONE_LINE_SQUARES = oneLineSquares;
+        board = new Square[boardSize];
+        this.opponent = ifOpponent;
+        currentSquareLocation = startLocation;
+    }
 
     public void setStartIcons(char mark) {
+        ImageIcon opponentIcon;
+
         loadImg();
         if (mark == 'X') {
             icon = blue;
@@ -42,46 +46,26 @@ public class SquareUtil {
             icon = green;
             opponentIcon = blue;
         }
-    }
-    /*
-    Достает сущность класса для того, чтобы добиться эффекта - сигнлтона
-     */
-    private static class SquareUtilHolder {
-        static final SquareUtil HOLDER_INSTANCE = new SquareUtil();
+
+        if (opponent) {
+            icon = opponentIcon;
+        }
     }
 
-    public static SquareUtil getInstance() {
-        return SquareUtilHolder.HOLDER_INSTANCE;
-    }
+    public JPanel initBoard() {
 
-
-    private SquareUtil(){
-
-    }
-
-
-    public JPanel initBoard(int oneLineSquares, int boardSize, int startLocation, boolean current) {
-        ONE_LINE_SQUARES = oneLineSquares;
-        Square[] board = new Square[boardSize];
         JPanel boardPanel = new JPanel();
         boardPanel.setBackground(Color.black);//границы
-        boardPanel.setLayout(new GridLayout(oneLineSquares, oneLineSquares * 2, 1, 1));
+        boardPanel.setLayout(new GridLayout(ONE_LINE_SQUARES, ONE_LINE_SQUARES * 2, 1, 1));
         for (int i = 0; i < board.length; i++) {
             board[i] = new Square();
             boardPanel.add(board[i]);
         }
-        currentSquareLocation = startLocation;
-        currentSquareLocationOpponent = startLocation;
 
-        if (current) {
-            this.board = board;
-        } else {
-            this.boardForOpponent = board;
-        }
         return boardPanel;
     }
 
-    public void initNewCurSquare(int direction, boolean current) {
+    public void initNewCurSquare(int direction) {
 
         if (currentSquare != null) {
             currentSquare.removeIcon();
@@ -125,7 +109,6 @@ public class SquareUtil {
     }
 
     public boolean outOfBorder(int direction) {
-        System.out.println(currentSquareLocation);
         for (int i = 1; i < ONE_LINE_SQUARES; i++) {
             if (((currentSquareLocation == (ONE_LINE_SQUARES * i - 1)) && (direction == 1))
                     || ((currentSquareLocation == ONE_LINE_SQUARES * i) && (direction == -1))) {

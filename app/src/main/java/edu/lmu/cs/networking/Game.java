@@ -254,34 +254,34 @@ public class Game {
         public void otherPlayerAction(int field, int location) {
             switch (field) {
                 case 1:
-                    output.println("OTHER MOVED" + " " + location);
+                    output.println("OTHER" + " " + location + " " + "MOVED");
                     break;
                 case 2:
-                    output.println("OTHER BLACK_KVAD" + " " + location);
+                    output.println("OTHER" + " " + location + " " + "BLACK_KVAD");
                     break;
                 case 3:
-                    output.println("OTHER EMPTY" + " " + location);
+                    output.println("OTHER" + " " + location + " " + "EMPTY");
                     break;
                 case 4:
-                    output.println("OTHER GRANIT" + " " + location);
+                    output.println("OTHER" + " " + location + " " + "GRANIT");
                     break;
-                case 5:
-                    output.println("OTHER WON" + " " + location);
+               /* case 5:
+                    output.println("OTHER" + " " + location + " " + "WON");
                     break;
                 case 6:
-                    output.println("OTHER LOSE" + " " + location);
-                    break;
+                    output.println("OTHER" + " " + location + " " + "LOSE");
+                    break;*/
                 case 7:
-                    output.println("OTHER VZORVAL" + " " + location);
+                    output.println("OTHER" + " " + location + " " + "VZORVAL");
                     break;
                 case 8:
-                    output.println("OTHER CURRENT WAS HERE" + " " + location);
+                    output.println("OTHER" + " " + location + " " + "CURRENT WAS HERE");
                     break;
                 case 9:
                     output.println("OTHER END");
                     break;
                 case 10:
-                    output.println("OTHER VZORVAL KLADKU" + " " + location);
+                    output.println("OTHER" + " " + location + " " + "VZORVAL KLADKU");
                     break;
 
             }
