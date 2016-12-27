@@ -83,34 +83,18 @@ public class SquareUtil {
 
     public void initNewCurSquare(int direction, boolean current) {
 
-        Square square;
-        int squareLocation;
-        Square[] board;
-        ImageIcon icon;
+        if (currentSquare != null) {
+            currentSquare.removeIcon();
 
-        if (current) {
-            square = currentSquare;
-            squareLocation = currentSquareLocation;
-            board = this.board;
-            icon = this.icon;
-        } else {
-            square = currentSquareOpponent;
-            squareLocation = currentSquareLocationOpponent;
-            board = this.boardForOpponent;
-            icon = this.opponentIcon;
         }
 
-        if (square != null) {
-            square.removeIcon();
+        currentSquareLocation += direction;
+        currentSquare = board[currentSquareLocation];
+        if (!currentSquare.getColor().equals(BREAKED_COLOR)) {
+            currentSquare.setColor(FREE_COLOR);
         }
-
-        squareLocation += direction;
-        square = board[squareLocation];
-        if (!square.getColor().equals(BREAKED_COLOR)) {
-            square.setColor(FREE_COLOR);
-        }
-        square.setIcon(icon);
-        square.repaint();
+        currentSquare.setIcon(icon);
+        currentSquare.repaint();
     }
 
     public  void squareIsWall(int direction) {

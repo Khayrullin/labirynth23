@@ -308,6 +308,11 @@ public class TicTacToeClient {
                         System.out.println("D");
                         direction = 1;
                         break;
+                    case KeyEvent.VK_Q:
+                        event = "QUIT";
+                        System.out.println("Q");
+                        frame.dispose();
+                        break;
                     default:
                         event = "WRONG KEY";
                 }
