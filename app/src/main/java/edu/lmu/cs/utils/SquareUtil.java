@@ -17,6 +17,9 @@ public class SquareUtil {
     private int currentSquareLocation;
     private Square currentSquare;
 
+    private int currentSquareLocationOpponent;
+    private Square currentSquareOpponent;
+
     private final Color BREAKED_COLOR = Color.pink;
     private final Color FREE_COLOR = Color.white;
     private int ONE_LINE_SQUARES;
@@ -57,9 +60,9 @@ public class SquareUtil {
     }
 
 
-    public JPanel initBoard(int oneLineSquares,int boardSize,int startLocation){
+    public JPanel initBoard(int oneLineSquares, int boardSize, int startLocation, boolean current) {
         ONE_LINE_SQUARES = oneLineSquares;
-        board = new Square[boardSize];
+        Square[] board = new Square[boardSize];
         JPanel boardPanel = new JPanel();
         boardPanel.setBackground(Color.black);//границы
         boardPanel.setLayout(new GridLayout(oneLineSquares, oneLineSquares * 2, 1, 1));
@@ -68,22 +71,46 @@ public class SquareUtil {
             boardPanel.add(board[i]);
         }
         currentSquareLocation = startLocation;
+        currentSquareLocationOpponent = startLocation;
+
+        if (current) {
+            this.board = board;
+        } else {
+            this.boardForOpponent = board;
+        }
         return boardPanel;
     }
 
+    public void initNewCurSquare(int direction, boolean current) {
 
-    public void initNewCurSquare(int direction) {
-        if (currentSquare != null){
-            currentSquare.removeIcon();
+        Square square;
+        int squareLocation;
+        Square[] board;
+        ImageIcon icon;
+
+        if (current) {
+            square = currentSquare;
+            squareLocation = currentSquareLocation;
+            board = this.board;
+            icon = this.icon;
+        } else {
+            square = currentSquareOpponent;
+            squareLocation = currentSquareLocationOpponent;
+            board = this.boardForOpponent;
+            icon = this.opponentIcon;
         }
 
-        currentSquareLocation += direction;
-        currentSquare = board[currentSquareLocation];
-        if (!currentSquare.getColor().equals(BREAKED_COLOR)) {
-            currentSquare.setColor(FREE_COLOR);
+        if (square != null) {
+            square.removeIcon();
         }
-        currentSquare.setIcon(icon);
-        currentSquare.repaint();
+
+        squareLocation += direction;
+        square = board[squareLocation];
+        if (!square.getColor().equals(BREAKED_COLOR)) {
+            square.setColor(FREE_COLOR);
+        }
+        square.setIcon(icon);
+        square.repaint();
     }
 
     public  void squareIsWall(int direction) {
@@ -128,25 +155,25 @@ public class SquareUtil {
 
         JLabel label = new JLabel((Icon) null);
 
-        public Square() {
+        Square() {
             setBackground(Color.gray);// фон всего
             add(label);
         }
 
-        public void setIcon(Icon icon) {
+        void setIcon(Icon icon) {
             label.setIcon(icon);
         }
 
 
-        public void removeIcon() {
+        void removeIcon() {
             this.setIcon(null);
         }
 
-        public void setColor(Color color) {
+        void setColor(Color color) {
             this.setBackground(color);
         }
 
-        public Color getColor() {
+        Color getColor() {
             return this.getBackground();
         }
     }
