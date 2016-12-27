@@ -81,7 +81,7 @@ public class Game {
         for (int i = 0; i < board.length; i++) {
             if (board[i] == null) {
                 if (PROCENT_OF_BLOCKS > (int) (Math.random() * 100)) {
-                    if (1 == (int) (Math.random() * 4)) {
+                    if (1 == (int) (Math.random() * 2)) {
                         board[i] = Block.IMMORTAL;
                     } else {
                         board[i] = Block.BRICK;
@@ -408,6 +408,8 @@ public class Game {
                             currentPlayer.opponent.otherPlayerAction(9,0);
                             currentPlayer = currentPlayer.opponent;
                         } else if (command.startsWith("QUIT")) {
+                            socket.close();
+
                             return;
                         }
                     } else output.println("MESSAGE ?");

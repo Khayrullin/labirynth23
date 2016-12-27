@@ -41,6 +41,11 @@ public class TicTacToeServer {
                 gamesArchive.add(game);
 
                 Game.Player playerX = game.new Player(listener.accept(), 'X', game.getXPlayerPlace());
+                if(playerX.socket.isClosed()){
+                     game = new Game();
+                    gamesArchive.add(game);
+                    playerX = game.new Player(listener.accept(), 'X', game.getXPlayerPlace());
+                }
 
                 Game.Player playerO = game.new Player(listener.accept(), 'O', game.getOPlayerPlace());
 
