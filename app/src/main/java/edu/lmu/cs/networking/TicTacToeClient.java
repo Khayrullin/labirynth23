@@ -10,7 +10,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * A client for the TicTacToe game, modified and extended from the
@@ -60,10 +62,11 @@ public class TicTacToeClient {
     /**
      * Runs the client as an application.
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         //SMSSender.smsSend("Game started","79047640086");
         String serverAddress = (args.length == 0) ? "localhost" : args[1];
         TicTacToeClient client = new TicTacToeClient(serverAddress);
+
         client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         client.frame.setSize(350, 450);
         client.frame.setVisible(true);
@@ -75,6 +78,7 @@ public class TicTacToeClient {
         client.frameOpponent.setResizable(false);
 
         client.play();
+
     }
 
 
@@ -82,16 +86,20 @@ public class TicTacToeClient {
      * Constructs the client by connecting to a server, laying out the
      * GUI and registering GUI listeners.
      */
-    public TicTacToeClient(String serverAddress) throws Exception {
+    public TicTacToeClient(String serverAddress) {
 
         initFrame();
-
-        socket = new Socket(serverAddress, PORT);
-        in = new BufferedReader(new InputStreamReader(
-                socket.getInputStream()));
-        out = new PrintWriter(socket.getOutputStream(), true);
-
+        try {
+            socket = new Socket(serverAddress, PORT);
+            in = new BufferedReader(new InputStreamReader(
+                    socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(frame, "Не удалось подключиться к серверу. Сервер недоступен");
+            System.exit(-1);
+        }
     }
+
 
     private void initFrame() {
 
@@ -109,7 +117,7 @@ public class TicTacToeClient {
     }
 
 
-    public void play() throws Exception {
+    public void play() {
 
 
         String response;
@@ -170,7 +178,7 @@ public class TicTacToeClient {
                         isCurrentMessageLabel = false;
 
                         if (response.endsWith("END")) {
-                            System.out.println("Ee hjwr");
+
                             currentSquareUtil = squareUtil;
                             isCurrentMessageLabel = true;
                             messageLabel.setText("Ваш ход");
@@ -201,7 +209,7 @@ public class TicTacToeClient {
                         bombedWoodenWall();
                     } else if (response.endsWith("VZORVAL KLADKU")) {
                         bombedWoodenWall();
-                    } else if (response.endsWith("OTHER WAS HERE")) {
+                    } else if ((response.endsWith("OTHER WAS HERE")) || (response.endsWith("CURRENT WAS HERE"))) {
                         bombedWoodenWall();
                         move();
                     }
@@ -210,9 +218,10 @@ public class TicTacToeClient {
                     switchOnKeyListener();
                 }
             }
-        } finally
 
-        {
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
             try {
                 socket.close();
             } catch (IOException e) {
@@ -267,19 +276,17 @@ public class TicTacToeClient {
                 "Want to play again?",
                 "Bombing is Fun Fun Fun",
                 JOptionPane.YES_NO_OPTION);
-        frame.dispose();
-        frameOpponent.dispose();
         return response == JOptionPane.YES_OPTION;
     }
 
-    private String endOfGame() {
-        String response;
+    private void endOfGame() {
         if (wantsToPlayAgain()) {
-            response = "YES";
+            initFrame();
+            play();
         } else {
-            response = "NO";
+            frame.dispose();
+            frameOpponent.dispose();
         }
-        return response;
     }
 
     private int setOpponentDirection(char direction) {
@@ -295,6 +302,7 @@ public class TicTacToeClient {
         }
         return 0;
     }
+
     private void bindKeyListener() {
 
         frame.addKeyListener(new KeyAdapter() {
