@@ -122,7 +122,6 @@ public class TicTacToeClient {
 
     public void play() {
 
-
         String response;
         try {
             response = in.readLine();
@@ -181,7 +180,6 @@ public class TicTacToeClient {
                         isCurrentMessageLabel = false;
 
                         if (response.endsWith("END")) {
-
                             currentSquareUtil = squareUtil;
                             isCurrentMessageLabel = true;
                             messageLabel.setText("Ваш ход");
@@ -216,7 +214,6 @@ public class TicTacToeClient {
                         bombedWoodenWall();
                         move();
                     }
-
                 } else {
                     switchOnKeyListener();
                 }
@@ -228,6 +225,7 @@ public class TicTacToeClient {
             try {
                 socket.close();
             } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
@@ -289,10 +287,12 @@ public class TicTacToeClient {
 
     private void endOfGame() {
         if (wantsToPlayAgain()) {
+            out.println("RESTART");
             clearFrame();
             initFrame();
             play();
         } else {
+            out.print("QUIT");
             frame.dispose();
             frameOpponent.dispose();
         }
@@ -383,13 +383,13 @@ public class TicTacToeClient {
                     case KeyEvent.VK_Q:
                         event = "QUIT";
                         System.out.println("Q");
-                        frame.dispose();
+                        endOfGame();
                         break;
                     default:
                         event = "WRONG KEY";
                 }
                 System.out.println(event);
-                if (event != null && !event.equals("WRONG KEY") && !(squareUtil.outOfBorder(direction))) {
+                if (event != null && !event.equals("WRONG KEY") && !(currentSquareUtil.outOfBorder(direction))) {
                     out.println(event);
                     if (event.startsWith("MOVE")) {
                         moved = true;
